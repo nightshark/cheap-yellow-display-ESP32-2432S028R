@@ -122,6 +122,7 @@ display:
     dc_pin: GPIO2
     rotation: 90
     invert_colors: false
+    auto_clear_enabled: false
     id: my_display
     lambda: |-
       // Header
