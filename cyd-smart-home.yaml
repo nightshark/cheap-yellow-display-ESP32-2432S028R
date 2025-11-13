@@ -172,7 +172,6 @@ touchscreen:
       x_max: 3850
       y_min: 240
       y_max: 3860
-    swap_x_y: false
     on_touch:
       - lambda: |-
           ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
