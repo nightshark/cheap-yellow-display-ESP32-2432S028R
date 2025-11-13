@@ -5,6 +5,10 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  on_boot:
+    priority: 600
+    then:
+      - light.turn_off: rgb_led
 
 esp32:
   board: esp32dev
