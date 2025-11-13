@@ -11,8 +11,12 @@ esphome:
   on_boot:
     then:
       - lambda: |-
-          // Initialize WiFi component reference
+          // FIXED: WiFi component reference for LVGL display updates
           auto wifi_component = id(wifi_component);
+          // FIXED: Remove .c_str() - ternary returns const char* already
+          lv_label_set_text(id(wifi_label), wifi_component->is_connected() ? "WiFi: Connected" : "WiFi: Disconnected");
+          // FIXED: Use lv_color_hex() for color conversion
+          lv_obj_set_style_text_color(id(wifi_label), lv_color_hex(wifi_component->is_connected() ? 0x00FF00 : 0xFF0000), 0);
 
 esp32:
   board: esp32dev
@@ -74,11 +78,12 @@ display:
     invert_colors: true
     id: my_display
     lambda: |-
-      // Example of properly using ESPTime with strftime
+      // Line 381 FIXED: Use to_c_tm() to convert ESPTime* to const tm*
       auto time = id(homeassistant_time).now();
       if (time.is_valid()) {
         char buf[20];
-        // FIXED: Use to_c_tm() to convert ESPTime to tm struct
+        // BEFORE (wrong): strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
+        // AFTER (correct): Use to_c_tm() method
         strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
         it.print(160, 5, id(roboto_12), buf);
       }
@@ -126,29 +131,32 @@ binary_sensor:
     id: fan_state
     entity_id: !secret ceiling_fan_entity
     internal: true
-    # Example of fixed on_state handler
+    # Line 395 FIXED: Remove .c_str() and use lv_color_hex()
     on_state:
       - lambda: |-
-          // FIXED: Removed .c_str() from const char* ternary expression
-          // The ternary operator (x ? "ON" : "OFF") returns const char*, not std::string
-          const char* status_text = x ? "Status: ON" : "Status: OFF";
+          // BEFORE (wrong): lv_label_set_text(id(fan_label), (x ? "Status: ON" : "Status: OFF").c_str());
+          // AFTER (correct): Remove .c_str() - ternary returns const char* already
+          lv_label_set_text(id(fan_label), x ? "Status: ON" : "Status: OFF");
 
-          // If using LVGL, use lv_color_hex() for color conversion
-          // FIXED: Use lv_color_hex() instead of raw integer
-          // auto color = lv_color_hex(x ? 0x00FF00 : 0xFF0000);  // Green : Red
-
-          ESP_LOGI("fan", "%s", status_text);
+          // BEFORE (wrong): lv_obj_set_style_text_color(id(fan_label), x ? 65280 : 16711680, 0);
+          // AFTER (correct): Use lv_color_hex() for color conversion
+          lv_obj_set_style_text_color(id(fan_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 
   - platform: homeassistant
     name: "HVAC State"
     id: hvac_state
     entity_id: !secret hvac_entity
     internal: true
+    # Line 410 FIXED: Same fixes as fan_state
     on_state:
       - lambda: |-
-          // FIXED: Same fix as fan_state
-          const char* status_text = x ? "Status: ON" : "Status: OFF";
-          ESP_LOGI("hvac", "%s", status_text);
+          // BEFORE (wrong): lv_label_set_text(id(hvac_label), (x ? "Status: ON" : "Status: OFF").c_str());
+          // AFTER (correct): Remove .c_str()
+          lv_label_set_text(id(hvac_label), x ? "Status: ON" : "Status: OFF");
+
+          // BEFORE (wrong): lv_obj_set_style_text_color(id(hvac_label), x ? 65280 : 16711680, 0);
+          // AFTER (correct): Use lv_color_hex()
+          lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 
   - platform: homeassistant
     name: "Camera Enabled"
