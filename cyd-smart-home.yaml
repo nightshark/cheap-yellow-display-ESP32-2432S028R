@@ -128,10 +128,8 @@ display:
       it.print(10, 40, id(roboto_16), id(my_black), "Ceiling Fan");
       it.printf(10, 60, id(roboto_12), id(fan_state).state ? id(my_green) : id(my_red),
                 "Status: %s", id(fan_state).state ? "ON" : "OFF");
-      it.printf(10, 75, id(roboto_12), id(my_black), "Speed: %s", id(fan_speed_text).state.c_str());
-      it.printf(10, 90, id(roboto_12), id(my_black), "Direction: %s",
-                id(fan_direction).state ? "Forward" : "Reverse");
-      it.print(10, 105, id(roboto_12), id(my_blue), "[TAP TO TOGGLE]");
+      it.printf(10, 75, id(roboto_12), id(my_black), "Speed: %s%%", id(fan_speed_text).state.c_str());
+      it.print(10, 90, id(roboto_12), id(my_blue), "[TAP TO TOGGLE]");
 
       // HVAC Section (Top Right)
       it.rectangle(165, 35, 150, 85, id(my_gray));
@@ -174,7 +172,6 @@ touchscreen:
       x_max: 3850
       y_min: 240
       y_max: 3860
-    swap_x_y: false
     on_touch:
       - lambda: |-
           ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
@@ -310,10 +307,6 @@ binary_sensor:
     entity_id: !secret camera_entity
     internal: true
 
-  - platform: homeassistant
-    id: fan_direction
-    entity_id: !secret ceiling_fan_direction_entity
-    internal: true
 
 sensor:
   - platform: homeassistant
@@ -406,7 +399,7 @@ number:
     id: fan_speed_control
     min_value: 0
     max_value: 100
-    step: 25
+    step: 33.33
     optimistic: true
     set_action:
       - homeassistant.service:
@@ -440,8 +433,6 @@ select:
       - "off"
       - "heat"
       - "cool"
-      - "auto"
-      - "fan_only"
     optimistic: true
     set_action:
       - homeassistant.service:
