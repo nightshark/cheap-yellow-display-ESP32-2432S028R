@@ -121,6 +121,7 @@ spi:
     clk_pin: GPIO14
     mosi_pin: GPIO13
     miso_pin: GPIO12
+    interface: hardware
   - id: touch_spi
     clk_pin: GPIO25
     mosi_pin: GPIO32
@@ -128,17 +129,20 @@ spi:
 
 # Display setup
 display:
-  - platform: ili9xxx
-    model: ili9341
+  - platform: mipi_spi
+    model: ILI9341
+    id: my_display
     spi_id: tft
     cs_pin: GPIO15
     dc_pin: GPIO2
     rotation: 90
     invert_colors: true
-    color_palette: 8BIT
+    color_depth: 16
+    dimensions:
+      width: 320
+      height: 240
     auto_clear_enabled: false
     update_interval: never
-    id: my_display
 
 # LVGL Graphics
 lvgl:
