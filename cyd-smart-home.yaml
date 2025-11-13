@@ -143,18 +143,11 @@ display:
       it.printf(170, 90, id(roboto_12), id(my_black), "Mode: %s", id(hvac_mode_text).state.c_str());
       it.print(170, 105, id(roboto_12), id(my_blue), "[TAP TO CONTROL]");
 
-      // Camera Status (Bottom Left)
+      // Quick Controls (Bottom Left)
       it.rectangle(5, 125, 150, 45, id(my_gray));
-      it.print(10, 130, id(roboto_16), id(my_black), "Camera");
-      it.printf(10, 150, id(roboto_12), id(camera_enabled).state ? id(my_green) : id(my_red),
-                "Status: %s", id(camera_enabled).state ? "ACTIVE" : "OFF");
-      it.print(10, 165, id(roboto_12), id(my_blue), "[TAP TO VIEW]");
-
-      // Quick Controls (Bottom Right)
-      it.rectangle(165, 125, 150, 45, id(my_gray));
-      it.print(170, 130, id(roboto_16), id(my_black), "Quick Actions");
-      it.print(170, 150, id(roboto_12), id(my_orange), "All Off");
-      it.print(250, 150, id(roboto_12), id(my_green), "All On");
+      it.print(10, 130, id(roboto_16), id(my_black), "Quick Actions");
+      it.print(10, 150, id(roboto_12), id(my_orange), "All Off");
+      it.print(90, 150, id(roboto_12), id(my_green), "All On");
 
       // Wi-Fi Status
       if (id(wifi_component).is_connected()) {
@@ -244,12 +237,6 @@ binary_sensor:
     entity_id: !secret hvac_entity
     internal: true
 
-  - platform: homeassistant
-    name: "Camera Enabled"
-    id: camera_enabled
-    entity_id: !secret camera_entity
-    internal: true
-
   # Touchscreen binary sensors for touch areas
   - platform: touchscreen
     touchscreen_id: my_touchscreen
@@ -281,24 +268,10 @@ binary_sensor:
 
   - platform: touchscreen
     touchscreen_id: my_touchscreen
-    name: "Camera Touch Area"
-    id: camera_touch_area
-    x_min: 5
-    x_max: 155
-    y_min: 125
-    y_max: 170
-    on_press:
-      - homeassistant.service:
-          service: camera.turn_on
-          data:
-            entity_id: !secret camera_entity
-
-  - platform: touchscreen
-    touchscreen_id: my_touchscreen
     name: "All Off Touch"
     id: all_off_touch
-    x_min: 165
-    x_max: 240
+    x_min: 5
+    x_max: 75
     y_min: 140
     y_max: 170
     on_press:
@@ -309,8 +282,8 @@ binary_sensor:
     touchscreen_id: my_touchscreen
     name: "All On Touch"
     id: all_on_touch
-    x_min: 241
-    x_max: 315
+    x_min: 76
+    x_max: 155
     y_min: 140
     y_max: 170
     on_press:
@@ -450,25 +423,6 @@ select:
           data:
             entity_id: !secret hvac_entity
             hvac_mode: !lambda "return x;"
-
-# -------------------
-# Switch for camera recording
-# -------------------
-switch:
-  - platform: template
-    name: "Camera Recording"
-    id: camera_recording
-    optimistic: true
-    turn_on_action:
-      - homeassistant.service:
-          service: camera.enable_motion_detection
-          data:
-            entity_id: !secret camera_entity
-    turn_off_action:
-      - homeassistant.service:
-          service: camera.disable_motion_detection
-          data:
-            entity_id: !secret camera_entity
 
 wifi:
   id: wifi_component
