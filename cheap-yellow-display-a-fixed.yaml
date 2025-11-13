@@ -158,12 +158,6 @@ binary_sensor:
           // AFTER (correct): Use lv_color_hex()
           lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 
-  - platform: homeassistant
-    name: "Camera Enabled"
-    id: camera_enabled
-    entity_id: !secret camera_entity
-    internal: true
-
 sensor:
   - platform: homeassistant
     name: "HVAC Target Temperature"
@@ -301,20 +295,3 @@ select:
           data:
             entity_id: !secret hvac_entity
             hvac_mode: !lambda "return x;"
-
-# Switch for camera
-switch:
-  - platform: template
-    name: "Camera Recording"
-    id: camera_recording
-    optimistic: true
-    turn_on_action:
-      - homeassistant.service:
-          service: camera.enable_motion_detection
-          data:
-            entity_id: !secret camera_entity
-    turn_off_action:
-      - homeassistant.service:
-          service: camera.disable_motion_detection
-          data:
-            entity_id: !secret camera_entity
