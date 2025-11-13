@@ -163,6 +163,7 @@ display:
 # Touchscreen Configuration
 touchscreen:
   - platform: xpt2046
+    id: my_touchscreen
     spi_id: touch_spi
     cs_pin: GPIO33
     interrupt_pin: GPIO36
@@ -245,6 +246,73 @@ binary_sensor:
     id: camera_enabled
     entity_id: !secret camera_entity
     internal: true
+
+  # Touchscreen binary sensors for touch areas
+  - platform: touchscreen
+    touchscreen_id: my_touchscreen
+    name: "Fan Touch Area"
+    id: fan_touch_area
+    x_min: 5
+    x_max: 155
+    y_min: 35
+    y_max: 120
+    on_press:
+      - homeassistant.service:
+          service: fan.toggle
+          data:
+            entity_id: !secret ceiling_fan_entity
+
+  - platform: touchscreen
+    touchscreen_id: my_touchscreen
+    name: "HVAC Touch Area"
+    id: hvac_touch_area
+    x_min: 165
+    x_max: 315
+    y_min: 35
+    y_max: 120
+    on_press:
+      - homeassistant.service:
+          service: climate.toggle
+          data:
+            entity_id: !secret hvac_entity
+
+  - platform: touchscreen
+    touchscreen_id: my_touchscreen
+    name: "Camera Touch Area"
+    id: camera_touch_area
+    x_min: 5
+    x_max: 155
+    y_min: 125
+    y_max: 170
+    on_press:
+      - homeassistant.service:
+          service: camera.turn_on
+          data:
+            entity_id: !secret camera_entity
+
+  - platform: touchscreen
+    touchscreen_id: my_touchscreen
+    name: "All Off Touch"
+    id: all_off_touch
+    x_min: 165
+    x_max: 240
+    y_min: 140
+    y_max: 170
+    on_press:
+      - homeassistant.service:
+          service: script.all_devices_off
+
+  - platform: touchscreen
+    touchscreen_id: my_touchscreen
+    name: "All On Touch"
+    id: all_on_touch
+    x_min: 241
+    x_max: 315
+    y_min: 140
+    y_max: 170
+    on_press:
+      - homeassistant.service:
+          service: script.all_devices_on
 
 
 sensor:
