@@ -434,8 +434,6 @@ select:
       - "off"
       - "heat"
       - "cool"
-      - "auto"
-      - "fan_only"
     optimistic: true
     set_action:
       - homeassistant.service:
