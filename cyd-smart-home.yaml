@@ -1,5 +1,5 @@
 substitutions:
-  device_name: "cyd-smart-home"
+  device_name: "cheap-yellow-display-a"
   friendly_name: "Smart Home Display"
 
 esphome:
@@ -30,6 +30,11 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  id: wifi_component
+  manual_ip:
+    static_ip: 192.168.1.113
+    gateway: 192.168.1.1
+    subnet: 255.255.255.1
 
   # Enable fallback hotspot
   ap:
@@ -423,6 +428,3 @@ select:
           data:
             entity_id: !secret hvac_entity
             hvac_mode: !lambda "return x;"
-
-wifi:
-  id: wifi_component
