@@ -143,10 +143,6 @@ display:
 # LVGL Graphics
 lvgl:
   log_level: INFO
-  displays:
-    - my_display
-  touchscreens:
-    - my_touchscreen
 
   pages:
     - id: main_page
