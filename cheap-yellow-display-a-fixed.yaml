@@ -149,6 +149,19 @@ binary_sensor:
           // AFTER (correct): Use lv_color_hex()
           lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 
+  # TEMPLATE: Apply same fixes to any other binary sensors with on_state handlers
+  # - platform: homeassistant
+  #   name: "Your Sensor Name"
+  #   id: your_sensor_id
+  #   entity_id: !secret your_entity
+  #   internal: true
+  #   on_state:
+  #     - lambda: |-
+  #         // FIXED: Remove .c_str() - ternary returns const char*
+  #         lv_label_set_text(id(your_label), x ? "Status: ON" : "Status: OFF");
+  #         // FIXED: Use lv_color_hex() for color conversion
+  #         lv_obj_set_style_text_color(id(your_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
+
 sensor:
   - platform: homeassistant
     name: "HVAC Target Temperature"

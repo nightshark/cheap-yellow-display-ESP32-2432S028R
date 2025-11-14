@@ -96,6 +96,23 @@ lv_label_set_text(id(hvac_label), x ? "Status: ON" : "Status: OFF");
 lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 ```
 
+### For ALL Other Binary Sensors with Same Error
+
+If you have additional binary sensors with on_state handlers that show the same errors, apply these fixes:
+
+**Pattern to find:**
+- Any `lv_label_set_text()` call with `.c_str()` on a ternary operator
+- Any `lv_obj_set_style_text_color()` call with raw integer colors (65280, 16711680, etc.)
+
+**Fix to apply:**
+```cpp
+// Step 1: Remove .c_str() from any ternary operator returning const char*
+lv_label_set_text(id(any_label), x ? "Text A" : "Text B");  // Remove .c_str()
+
+// Step 2: Wrap color integers with lv_color_hex()
+lv_obj_set_style_text_color(id(any_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
+```
+
 ## Implementation Example
 
 Here's a complete example of a corrected lambda function for an LVGL display:
