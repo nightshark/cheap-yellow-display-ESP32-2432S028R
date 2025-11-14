@@ -8,15 +8,6 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
-  on_boot:
-    then:
-      - lambda: |-
-          // FIXED: WiFi component reference for LVGL display updates
-          auto wifi_component = id(wifi_component);
-          // FIXED: Remove .c_str() - ternary returns const char* already
-          lv_label_set_text(id(wifi_label), wifi_component->is_connected() ? "WiFi: Connected" : "WiFi: Disconnected");
-          // FIXED: Use lv_color_hex() for color conversion
-          lv_obj_set_style_text_color(id(wifi_label), lv_color_hex(wifi_component->is_connected() ? 0x00FF00 : 0xFF0000), 0);
 
 esp32:
   board: esp32dev

@@ -23,7 +23,7 @@ strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
 strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
 ```
 
-### Error 2: c_str() on const char* (Lines 395, 410, and line 16 context)
+### Error 2: c_str() on const char* (Lines 16, 395, 410)
 **Error:**
 ```
 error: request for member 'c_str' in '(x ? ((const char*)"Status: ON") : ((const char*)"Status: OFF"))', which is of non-class type 'const char*'
@@ -59,6 +59,41 @@ lv_label_set_style_text_color(label, lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 // Alternative (using lv_color_make for RGB values):
 lv_label_set_style_text_color(label,
     x ? lv_color_make(0, 255, 0) : lv_color_make(255, 0, 0), 0);
+```
+
+## Line-by-Line Fixes
+
+### Line 16 - WiFi Status (in on_boot or display lambda)
+```cpp
+// BEFORE (incorrect):
+lv_label_set_text(id(wifi_label), (wifi_component->is_connected() ? "WiFi: Connected" : "WiFi: Disconnected").c_str());
+lv_obj_set_style_text_color(id(wifi_label), wifi_component->is_connected() ? 65280 : 16711680, 0);
+
+// AFTER (correct):
+lv_label_set_text(id(wifi_label), wifi_component->is_connected() ? "WiFi: Connected" : "WiFi: Disconnected");
+lv_obj_set_style_text_color(id(wifi_label), lv_color_hex(wifi_component->is_connected() ? 0x00FF00 : 0xFF0000), 0);
+```
+
+### Line 395 - Fan State on_state Handler
+```cpp
+// BEFORE (incorrect):
+lv_label_set_text(id(fan_label), (x ? "Status: ON" : "Status: OFF").c_str());
+lv_obj_set_style_text_color(id(fan_label), x ? 65280 : 16711680, 0);
+
+// AFTER (correct):
+lv_label_set_text(id(fan_label), x ? "Status: ON" : "Status: OFF");
+lv_obj_set_style_text_color(id(fan_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
+```
+
+### Line 410 - HVAC State on_state Handler
+```cpp
+// BEFORE (incorrect):
+lv_label_set_text(id(hvac_label), (x ? "Status: ON" : "Status: OFF").c_str());
+lv_obj_set_style_text_color(id(hvac_label), x ? 65280 : 16711680, 0);
+
+// AFTER (correct):
+lv_label_set_text(id(hvac_label), x ? "Status: ON" : "Status: OFF");
+lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 ```
 
 ## Implementation Example
