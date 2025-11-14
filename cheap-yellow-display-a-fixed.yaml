@@ -2,8 +2,8 @@
 # The original file had several type conversion and API usage errors
 
 substitutions:
-  device_name: "cheap-yellow-display-a"
-  friendly_name: "CYD Display A"
+  device_name: "cheap-yellow-display-b"
+  friendly_name: "CYD Display B"
 
 esphome:
   name: ${device_name}
@@ -30,6 +30,10 @@ wifi:
   id: wifi_component
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  manual_ip:
+    gateway: 192.168.1.1
+    static_ip: 192.168.1.222
+    subnet: 255.255.255.1
 
   # Enable fallback hotspot
   ap:
@@ -117,38 +121,7 @@ color:
     blue: 50%
 
 # Import states from Home Assistant
-binary_sensor:
-  - platform: homeassistant
-    name: "Fan State"
-    id: fan_state
-    entity_id: !secret ceiling_fan_entity
-    internal: true
-    # Line 395 FIXED: Remove .c_str() and use lv_color_hex()
-    on_state:
-      - lambda: |-
-          // BEFORE (wrong): lv_label_set_text(id(fan_label), (x ? "Status: ON" : "Status: OFF").c_str());
-          // AFTER (correct): Remove .c_str() - ternary returns const char* already
-          lv_label_set_text(id(fan_label), x ? "Status: ON" : "Status: OFF");
 
-          // BEFORE (wrong): lv_obj_set_style_text_color(id(fan_label), x ? 65280 : 16711680, 0);
-          // AFTER (correct): Use lv_color_hex() for color conversion
-          lv_obj_set_style_text_color(id(fan_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
-
-  - platform: homeassistant
-    name: "HVAC State"
-    id: hvac_state
-    entity_id: !secret hvac_entity
-    internal: true
-    # Line 410 FIXED: Same fixes as fan_state
-    on_state:
-      - lambda: |-
-          // BEFORE (wrong): lv_label_set_text(id(hvac_label), (x ? "Status: ON" : "Status: OFF").c_str());
-          // AFTER (correct): Remove .c_str()
-          lv_label_set_text(id(hvac_label), x ? "Status: ON" : "Status: OFF");
-
-          // BEFORE (wrong): lv_obj_set_style_text_color(id(hvac_label), x ? 65280 : 16711680, 0);
-          // AFTER (correct): Use lv_color_hex()
-          lv_obj_set_style_text_color(id(hvac_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), 0);
 
   # TEMPLATE: Apply same fixes to any other binary sensors with on_state handlers
   # - platform: homeassistant
