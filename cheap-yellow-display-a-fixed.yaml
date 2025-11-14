@@ -71,7 +71,12 @@ display:
     cs_pin: GPIO15
     dc_pin: GPIO2
     rotation: 90
-    invert_colors: true
+    color_palette: NONE
+    color_order: bgr
+    invert_colors: false
+    dimensions:
+      width: 320
+      height: 240
     id: my_display
     lambda: |-
       // Line 381 FIXED: Use to_c_tm() to convert ESPTime* to const tm*
