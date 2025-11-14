@@ -72,50 +72,252 @@ display:
     rotation: 90
     invert_colors: false
     id: my_display
-    lambda: |-
-      // Header
-      it.filled_rectangle(0, 0, 320, 30, id(my_blue));
-      it.print(160, 5, id(roboto_16), id(my_white), TextAlign::TOP_CENTER, "SMART HOME CONTROL");
+    auto_clear_enabled: false  # Required for LVGL
 
-      // Current time (FIXED: Use to_c_tm() to convert ESPTime to tm struct)
-      it.strftime(160, 220, id(roboto_12), id(my_gray), TextAlign::TOP_CENTER, "%Y-%m-%d %H:%M", id(homeassistant_time).now());
+# LVGL Configuration
+lvgl:
+  log_level: INFO
+  displays:
+    - my_display
+  touchscreens:
+    - my_touchscreen
 
-      // Ceiling Fan Section (Top Left)
-      it.rectangle(5, 35, 150, 85, id(my_gray));
-      it.print(10, 40, id(roboto_16), id(my_black), "Ceiling Fan");
-      it.printf(10, 60, id(roboto_12), id(fan_state).state ? id(my_green) : id(my_red),
-                "Status: %s", id(fan_state).state ? "ON" : "OFF");
-      it.printf(10, 75, id(roboto_12), id(my_black), "Speed: %s%%", id(fan_speed_text).state.c_str());
-      it.print(10, 90, id(roboto_12), id(my_blue), "[TAP TO TOGGLE]");
+  pages:
+    - id: main_page
+      widgets:
+        # Header bar
+        - obj:
+            id: header_bar
+            x: 0
+            y: 0
+            width: 320
+            height: 30
+            bg_color: 0x0000FF
+            border_width: 0
+            widgets:
+              - label:
+                  id: header_label
+                  text: "SMART HOME CONTROL"
+                  align: CENTER
+                  text_color: 0xFFFFFF
+                  text_font: roboto_16
 
-      // HVAC Section (Top Right)
-      it.rectangle(165, 35, 150, 85, id(my_gray));
-      it.print(170, 40, id(roboto_16), id(my_black), "HVAC");
-      it.printf(170, 60, id(roboto_12), id(hvac_state).state ? id(my_green) : id(my_red),
-                "Status: %s", id(hvac_state).state ? "ON" : "OFF");
-      it.printf(170, 75, id(roboto_12), id(my_black), "Target: %.1f°F", id(hvac_target_temp).state);
-      it.printf(170, 90, id(roboto_12), id(my_black), "Mode: %s", id(hvac_mode_text).state.c_str());
-      it.print(170, 105, id(roboto_12), id(my_blue), "[TAP TO CONTROL]");
+        # Time display
+        - label:
+            id: time_label
+            x: 160
+            y: 220
+            text: "Loading..."
+            align: TOP_CENTER
+            text_color: 0x808080
+            text_font: roboto_12
 
-      // Camera Status (Bottom Left) - Remove if you don't need camera
-      it.rectangle(5, 125, 150, 45, id(my_gray));
-      it.print(10, 130, id(roboto_16), id(my_black), "Camera");
-      it.printf(10, 150, id(roboto_12), id(camera_enabled).state ? id(my_green) : id(my_red),
-                "Status: %s", id(camera_enabled).state ? "ACTIVE" : "OFF");
-      it.print(10, 165, id(roboto_12), id(my_blue), "[TAP TO VIEW]");
+        # Ceiling Fan Container (Top Left)
+        - obj:
+            id: fan_container
+            x: 5
+            y: 35
+            width: 150
+            height: 85
+            border_color: 0x808080
+            border_width: 1
+            bg_color: 0xFFFFFF
+            pad_all: 5
+            widgets:
+              - label:
+                  id: fan_title
+                  text: "Ceiling Fan"
+                  x: 0
+                  y: 0
+                  text_font: roboto_16
+                  text_color: 0x000000
+              - label:
+                  id: fan_status_label
+                  text: "Status: OFF"
+                  x: 0
+                  y: 20
+                  text_font: roboto_12
+                  text_color: 0xFF0000
+              - label:
+                  id: fan_speed_label
+                  text: "Speed: 0%"
+                  x: 0
+                  y: 35
+                  text_font: roboto_12
+                  text_color: 0x000000
+              - button:
+                  id: fan_toggle_btn
+                  x: 0
+                  y: 50
+                  width: 140
+                  height: 25
+                  on_click:
+                    - homeassistant.service:
+                        service: fan.toggle
+                        data:
+                          entity_id: !secret ceiling_fan_entity
+                  widgets:
+                    - label:
+                        text: "TAP TO TOGGLE"
+                        text_color: 0x0000FF
+                        text_font: roboto_12
 
-      // Quick Controls (Bottom Right)
-      it.rectangle(165, 125, 150, 45, id(my_gray));
-      it.print(170, 130, id(roboto_16), id(my_black), "Quick Actions");
-      it.print(170, 150, id(roboto_12), id(my_orange), "All Off");
-      it.print(250, 150, id(roboto_12), id(my_green), "All On");
+        # HVAC Container (Top Right)
+        - obj:
+            id: hvac_container
+            x: 165
+            y: 35
+            width: 150
+            height: 85
+            border_color: 0x808080
+            border_width: 1
+            bg_color: 0xFFFFFF
+            pad_all: 5
+            widgets:
+              - label:
+                  id: hvac_title
+                  text: "HVAC"
+                  x: 0
+                  y: 0
+                  text_font: roboto_16
+                  text_color: 0x000000
+              - label:
+                  id: hvac_status_label
+                  text: "Status: OFF"
+                  x: 0
+                  y: 20
+                  text_font: roboto_12
+                  text_color: 0xFF0000
+              - label:
+                  id: hvac_temp_label
+                  text: "Target: --°F"
+                  x: 0
+                  y: 35
+                  text_font: roboto_12
+                  text_color: 0x000000
+              - label:
+                  id: hvac_mode_label
+                  text: "Mode: --"
+                  x: 0
+                  y: 50
+                  text_font: roboto_12
+                  text_color: 0x000000
+              - button:
+                  id: hvac_toggle_btn
+                  x: 0
+                  y: 65
+                  width: 140
+                  height: 20
+                  on_click:
+                    - homeassistant.service:
+                        service: climate.toggle
+                        data:
+                          entity_id: !secret hvac_entity
+                  widgets:
+                    - label:
+                        text: "CONTROL"
+                        text_color: 0x0000FF
+                        text_font: roboto_12
 
-      // Wi-Fi Status
-      if (id(wifi_component).is_connected()) {
-        it.print(5, 220, id(roboto_12), id(my_green), "WiFi: Connected");
-      } else {
-        it.print(5, 220, id(roboto_12), id(my_red), "WiFi: Disconnected");
-      }
+        # Camera Container (Bottom Left)
+        - obj:
+            id: camera_container
+            x: 5
+            y: 125
+            width: 150
+            height: 45
+            border_color: 0x808080
+            border_width: 1
+            bg_color: 0xFFFFFF
+            pad_all: 5
+            widgets:
+              - label:
+                  id: camera_title
+                  text: "Camera"
+                  x: 0
+                  y: 0
+                  text_font: roboto_16
+                  text_color: 0x000000
+              - label:
+                  id: camera_status_label
+                  text: "Status: OFF"
+                  x: 0
+                  y: 20
+                  text_font: roboto_12
+                  text_color: 0xFF0000
+              - button:
+                  id: camera_view_btn
+                  x: 0
+                  y: 35
+                  width: 100
+                  height: 20
+                  on_click:
+                    - homeassistant.service:
+                        service: camera.turn_on
+                        data:
+                          entity_id: !secret camera_entity
+                  widgets:
+                    - label:
+                        text: "VIEW"
+                        text_color: 0x0000FF
+                        text_font: roboto_12
+
+        # Quick Actions Container (Bottom Right)
+        - obj:
+            id: actions_container
+            x: 165
+            y: 125
+            width: 150
+            height: 45
+            border_color: 0x808080
+            border_width: 1
+            bg_color: 0xFFFFFF
+            pad_all: 5
+            widgets:
+              - label:
+                  id: actions_title
+                  text: "Quick Actions"
+                  x: 0
+                  y: 0
+                  text_font: roboto_16
+                  text_color: 0x000000
+              - button:
+                  id: all_off_btn
+                  x: 0
+                  y: 20
+                  width: 60
+                  height: 20
+                  on_click:
+                    - homeassistant.service:
+                        service: script.all_devices_off
+                  widgets:
+                    - label:
+                        text: "All Off"
+                        text_color: 0xFF8000
+                        text_font: roboto_12
+              - button:
+                  id: all_on_btn
+                  x: 70
+                  y: 20
+                  width: 60
+                  height: 20
+                  on_click:
+                    - homeassistant.service:
+                        service: script.all_devices_on
+                  widgets:
+                    - label:
+                        text: "All On"
+                        text_color: 0x00FF00
+                        text_font: roboto_12
+
+        # WiFi status
+        - label:
+            id: wifi_status_label
+            x: 5
+            y: 220
+            text: "WiFi: --"
+            text_color: 0x808080
+            text_font: roboto_12
 
 # Fonts
 font:
@@ -176,18 +378,45 @@ binary_sensor:
     id: fan_state
     entity_id: !secret ceiling_fan_entity
     internal: true
+    on_state:
+      - lvgl.label.update:
+          id: fan_status_label
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
+      - lvgl.label.update:
+          id: fan_status_label
+          text_color: !lambda |-
+            return x ? 0x00FF00 : 0xFF0000;
 
   - platform: homeassistant
     name: "HVAC State"
     id: hvac_state
     entity_id: !secret hvac_entity
     internal: true
+    on_state:
+      - lvgl.label.update:
+          id: hvac_status_label
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
+      - lvgl.label.update:
+          id: hvac_status_label
+          text_color: !lambda |-
+            return x ? 0x00FF00 : 0xFF0000;
 
   - platform: homeassistant
     name: "Camera Enabled"
     id: camera_enabled
     entity_id: !secret camera_entity
     internal: true
+    on_state:
+      - lvgl.label.update:
+          id: camera_status_label
+          text: !lambda |-
+            return x ? "Status: ACTIVE" : "Status: OFF";
+      - lvgl.label.update:
+          id: camera_status_label
+          text_color: !lambda |-
+            return x ? 0x00FF00 : 0xFF0000;
 
 sensor:
   - platform: homeassistant
@@ -196,6 +425,13 @@ sensor:
     entity_id: !secret hvac_entity
     attribute: temperature
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: hvac_temp_label
+          text: !lambda |-
+            char buf[32];
+            snprintf(buf, sizeof(buf), "Target: %.1f°F", x);
+            return buf;
 
   - platform: wifi_signal
     name: "WiFi Signal"
@@ -209,6 +445,11 @@ text_sensor:
     entity_id: !secret ceiling_fan_entity
     attribute: percentage
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: fan_speed_label
+          text: !lambda |-
+            return "Speed: " + x + "%";
 
   - platform: homeassistant
     name: "HVAC Mode Text"
@@ -216,15 +457,45 @@ text_sensor:
     entity_id: !secret hvac_entity
     attribute: hvac_mode
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: hvac_mode_label
+          text: !lambda |-
+            return "Mode: " + x;
 
   - platform: wifi_info
     ip_address:
       name: "IP Address"
       id: ip_address
 
+# Interval to update time and WiFi status
+interval:
+  - interval: 1s
+    then:
+      - lvgl.label.update:
+          id: time_label
+          text: !lambda |-
+            auto time = id(homeassistant_time).now();
+            if (time.is_valid()) {
+              char buf[32];
+              auto time_struct = time.to_c_tm();
+              strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
+              return buf;
+            }
+            return "Loading...";
+      - lvgl.label.update:
+          id: wifi_status_label
+          text: !lambda |-
+            return id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
+      - lvgl.label.update:
+          id: wifi_status_label
+          text_color: !lambda |-
+            return id(wifi_component).is_connected() ? 0x00FF00 : 0xFF0000;
+
 # Touchscreen
 touchscreen:
   - platform: xpt2046
+    id: my_touchscreen
     spi_id: touch_spi
     cs_pin: GPIO33
     interrupt_pin: GPIO36
@@ -234,75 +505,6 @@ touchscreen:
       x_max: 3850
       y_min: 240
       y_max: 3860
-    on_touch:
-      - lambda: |-
-          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
-              touch.x,
-              touch.y,
-              touch.x_raw,
-              touch.y_raw
-              );
-    binary_sensor:
-      # Ceiling Fan Control Area
-      - name: "Fan Touch Area"
-        id: fan_touch_area
-        x_min: 5
-        x_max: 155
-        y_min: 35
-        y_max: 120
-        on_press:
-          - homeassistant.service:
-              service: fan.toggle
-              data:
-                entity_id: !secret ceiling_fan_entity
-
-      # HVAC Control Area
-      - name: "HVAC Touch Area"
-        id: hvac_touch_area
-        x_min: 165
-        x_max: 315
-        y_min: 35
-        y_max: 120
-        on_press:
-          - homeassistant.service:
-              service: climate.toggle
-              data:
-                entity_id: !secret hvac_entity
-
-      # Camera View Area
-      - name: "Camera Touch Area"
-        id: camera_touch_area
-        x_min: 5
-        x_max: 155
-        y_min: 125
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: camera.turn_on
-              data:
-                entity_id: !secret camera_entity
-
-      # All Off Button
-      - name: "All Off Touch"
-        id: all_off_touch
-        x_min: 165
-        x_max: 240
-        y_min: 140
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: script.all_devices_off
-
-      # All On Button
-      - name: "All On Touch"
-        id: all_on_touch
-        x_min: 241
-        x_max: 315
-        y_min: 140
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: script.all_devices_on
 
 # RGB LED outputs
 output:
