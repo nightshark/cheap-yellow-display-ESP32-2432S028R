@@ -65,18 +65,12 @@ spi:
 # Display with LVGL
 display:
   - platform: ili9xxx
-    model: ili9341
+    model: ili9342
     spi_id: tft
-    data_rate: 40MHz
     cs_pin: GPIO15
     dc_pin: GPIO2
     rotation: 90
-    color_palette: NONE
-    color_order: bgr
-    invert_colors: false
-    dimensions:
-      width: 320
-      height: 240
+    invert_colors: true
     id: my_display
     lambda: |-
       // Line 381 FIXED: Use to_c_tm() to convert ESPTime* to const tm*
