@@ -12,15 +12,25 @@ error: cannot convert 'esphome::ESPTime*' to 'const tm*'
 strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
 ```
 
+Or if you try `&time.to_c_tm()`:
+```
+error: taking address of rvalue [-fpermissive]
+strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
+```
+
 **Fix:**
-The `strftime` function expects a `const tm*` pointer, but ESPHome's `ESPTime` is being passed directly. Use the `.to_c_tm()` method to convert:
+The `strftime` function expects a `const tm*` pointer. The `to_c_tm()` method returns a temporary value (rvalue), so you can't take its address directly. Store the result in a variable first:
 
 ```cpp
 // Before (incorrect):
 strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
 
-// After (correct):
+// Also incorrect (can't take address of rvalue):
 strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
+
+// After (correct):
+auto time_struct = time.to_c_tm();
+strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
 ```
 
 ### Error 2: c_str() on const char* (Lines 16, 395, 410)
@@ -62,6 +72,20 @@ lv_label_set_style_text_color(label,
 ```
 
 ## Line-by-Line Fixes
+
+### Line 381 - strftime in Display Lambda
+```cpp
+// BEFORE (incorrect):
+auto time = id(homeassistant_time).now();
+char buf[20];
+strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
+
+// AFTER (correct):
+auto time = id(homeassistant_time).now();
+char buf[20];
+auto time_struct = time.to_c_tm();
+strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
+```
 
 ### Line 16 - WiFi Status (in on_boot or display lambda)
 ```cpp
@@ -125,8 +149,9 @@ display:
       // Get current time
       auto time = id(homeassistant_time).now();
       char buf[20];
-      // FIXED: Use to_c_tm() method
-      strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
+      // FIXED: Store to_c_tm() result, then take its address
+      auto time_struct = time.to_c_tm();
+      strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
       lv_label_set_text(id(time_label), buf);
 
       // FIXED: Remove .c_str() from const char* ternary

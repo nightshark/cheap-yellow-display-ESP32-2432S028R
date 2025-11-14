@@ -74,8 +74,9 @@ display:
       if (time.is_valid()) {
         char buf[20];
         // BEFORE (wrong): strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time);
-        // AFTER (correct): Use to_c_tm() method
-        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time.to_c_tm());
+        // AFTER (correct): Store to_c_tm() result, then take its address
+        auto time_struct = time.to_c_tm();
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
         it.print(160, 5, id(roboto_12), buf);
       }
 
