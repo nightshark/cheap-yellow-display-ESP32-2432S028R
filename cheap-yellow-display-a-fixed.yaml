@@ -66,11 +66,12 @@ spi:
 display:
   - platform: ili9xxx
     model: ili9341
+    color_palette: 8BIT
     spi_id: tft
     cs_pin: GPIO15
     dc_pin: GPIO2
     rotation: 90
-    invert_colors: true
+    invert_colors: false
     id: my_display
     lambda: |-
       // Line 381 FIXED: Use to_c_tm() to convert ESPTime* to const tm*
