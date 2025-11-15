@@ -342,7 +342,7 @@ binary_sensor:
       - lvgl.label.update:
           id: fan_status_label
           text_color: !lambda |-
-            return x ? 0x00FF00 : 0xFF0000;
+            return lv_color_hex(x ? 0x00FF00 : 0xFF0000);
 
   - platform: homeassistant
     name: "HVAC State"
@@ -357,7 +357,7 @@ binary_sensor:
       - lvgl.label.update:
           id: hvac_status_label
           text_color: !lambda |-
-            return x ? 0x00FF00 : 0xFF0000;
+            return lv_color_hex(x ? 0x00FF00 : 0xFF0000);
 
 sensor:
   - platform: homeassistant
@@ -431,7 +431,7 @@ interval:
       - lvgl.label.update:
           id: wifi_status_label
           text_color: !lambda |-
-            return id(wifi_component).is_connected() ? 0x00FF00 : 0xFF0000;
+            return lv_color_hex(id(wifi_component).is_connected() ? 0x00FF00 : 0xFF0000);
 
 # Touchscreen
 touchscreen:
