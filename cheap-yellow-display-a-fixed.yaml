@@ -334,10 +334,16 @@ binary_sensor:
     entity_id: !secret ceiling_fan_entity
     internal: true
     on_state:
-      - lambda: |-
-          auto status_text = x ? "Status: ON" : "Status: OFF";
-          lv_label_set_text(id(fan_status_label), status_text);
-          lv_obj_set_style_text_color(id(fan_status_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+      - lvgl.label.update:
+          id: fan_status_label
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
+      - lvgl.obj.set_style_text_color:
+          id: fan_status_label
+          state: LV_STATE_DEFAULT
+          selector: LV_PART_MAIN
+          color: !lambda |-
+            return lv_color_hex(x ? 0x00FF00 : 0xFF0000);
 
   - platform: homeassistant
     name: "HVAC State"
@@ -345,10 +351,16 @@ binary_sensor:
     entity_id: !secret hvac_entity
     internal: true
     on_state:
-      - lambda: |-
-          auto status_text = x ? "Status: ON" : "Status: OFF";
-          lv_label_set_text(id(hvac_status_label), status_text);
-          lv_obj_set_style_text_color(id(hvac_status_label), lv_color_hex(x ? 0x00FF00 : 0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+      - lvgl.label.update:
+          id: hvac_status_label
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
+      - lvgl.obj.set_style_text_color:
+          id: hvac_status_label
+          state: LV_STATE_DEFAULT
+          selector: LV_PART_MAIN
+          color: !lambda |-
+            return lv_color_hex(x ? 0x00FF00 : 0xFF0000);
 
 sensor:
   - platform: homeassistant
@@ -358,10 +370,12 @@ sensor:
     attribute: temperature
     internal: true
     on_value:
-      - lambda: |-
-          char buf[32];
-          snprintf(buf, sizeof(buf), "Target: %.1f°F", x);
-          lv_label_set_text(id(hvac_temp_label), buf);
+      - lvgl.label.update:
+          id: hvac_temp_label
+          text: !lambda |-
+            char buf[32];
+            snprintf(buf, sizeof(buf), "Target: %.1f°F", x);
+            return buf;
 
   - platform: wifi_signal
     name: "WiFi Signal"
@@ -376,9 +390,10 @@ text_sensor:
     attribute: percentage
     internal: true
     on_value:
-      - lambda: |-
-          std::string text = "Speed: " + x + "%";
-          lv_label_set_text(id(fan_speed_label), text.c_str());
+      - lvgl.label.update:
+          id: fan_speed_label
+          text: !lambda |-
+            return "Speed: " + x + "%";
 
   - platform: homeassistant
     name: "HVAC Mode Text"
@@ -387,9 +402,10 @@ text_sensor:
     attribute: hvac_mode
     internal: true
     on_value:
-      - lambda: |-
-          std::string text = "Mode: " + x;
-          lv_label_set_text(id(hvac_mode_label), text.c_str());
+      - lvgl.label.update:
+          id: hvac_mode_label
+          text: !lambda |-
+            return "Mode: " + x;
 
   - platform: wifi_info
     ip_address:
@@ -400,20 +416,27 @@ text_sensor:
 interval:
   - interval: 1s
     then:
-      - lambda: |-
-          auto time = id(homeassistant_time).now();
-          if (time.is_valid()) {
-            char buf[32];
-            auto time_struct = time.to_c_tm();
-            strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
-            lv_label_set_text(id(time_label), buf);
-          } else {
-            lv_label_set_text(id(time_label), "Loading...");
-          }
-
-          auto wifi_text = id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
-          lv_label_set_text(id(wifi_status_label), wifi_text);
-          lv_obj_set_style_text_color(id(wifi_status_label), lv_color_hex(id(wifi_component).is_connected() ? 0x00FF00 : 0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+      - lvgl.label.update:
+          id: time_label
+          text: !lambda |-
+            auto time = id(homeassistant_time).now();
+            if (time.is_valid()) {
+              char buf[32];
+              auto time_struct = time.to_c_tm();
+              strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &time_struct);
+              return buf;
+            }
+            return "Loading...";
+      - lvgl.label.update:
+          id: wifi_status_label
+          text: !lambda |-
+            return id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
+      - lvgl.obj.set_style_text_color:
+          id: wifi_status_label
+          state: LV_STATE_DEFAULT
+          selector: LV_PART_MAIN
+          color: !lambda |-
+            return lv_color_hex(id(wifi_component).is_connected() ? 0x00FF00 : 0xFF0000);
 
 # Touchscreen
 touchscreen:
