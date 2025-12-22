@@ -1,0 +1,104 @@
+# ESP32-2432S028R (Sunton 2.8" / CYD) Device Configuration
+# Hardware-specific configuration for this display board
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# SPI Configuration for Display and Touch
+spi:
+  - id: tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin:
+      number: GPIO12
+      ignore_strapping_warning: true
+    interface: hardware
+  - id: touch
+    clk_pin: GPIO25
+    mosi_pin: GPIO32
+    miso_pin: GPIO39
+
+# Display setup
+display:
+  - id: main_display
+    platform: mipi_spi
+    model: ILI9341
+    spi_id: tft
+    cs_pin:
+      number: GPIO15
+      ignore_strapping_warning: true
+    dc_pin:
+      number: GPIO2
+      ignore_strapping_warning: true
+    rotation: 90
+    invert_colors: true
+    color_depth: 16
+    dimensions:
+      width: 320
+      height: 240
+    auto_clear_enabled: false
+    update_interval: never
+
+# Touchscreen Configuration
+touchscreen:
+  - id: main_touchscreen
+    platform: xpt2046
+    spi_id: touch
+    cs_pin: GPIO33
+    interrupt_pin: GPIO36
+    update_interval: 50ms
+    calibration:
+      x_min: 200
+      x_max: 3850
+      y_min: 240
+      y_max: 3860
+    # Uncomment to debug touch calibration
+    # on_touch:
+    #   - lambda: |-
+    #       ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
+    #           touch.x,
+    #           touch.y,
+    #           touch.x_raw,
+    #           touch.y_raw
+    #       );
+
+# Output pins
+output:
+  - id: backlight_pwm
+    platform: ledc
+    pin: GPIO21
+    frequency: 1000Hz
+  - id: output_red
+    platform: ledc
+    pin: GPIO4
+  - id: output_green
+    platform: ledc
+    pin: GPIO16
+  - id: output_blue
+    platform: ledc
+    pin: GPIO17
+
+# Lights
+light:
+  - id: backlight
+    platform: monochromatic
+    output: backlight_pwm
+    name: "Display Backlight"
+    restore_mode: ALWAYS_ON
+    default_transition_length: 0s
+  - id: rgb_led
+    platform: rgb
+    name: "RGB LED"
+    red: output_red
+    green: output_green
+    blue: output_blue
+    restore_mode: ALWAYS_OFF
+
+# Optional: Light sensor (uncomment to use)
+# sensor:
+#   - platform: adc
+#     pin: GPIO34
+#     name: "Brightness"
+#     update_interval: 60s
