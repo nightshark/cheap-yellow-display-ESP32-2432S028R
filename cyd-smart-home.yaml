@@ -159,68 +159,150 @@ lvgl:
         # Header
         - label:
             align: TOP_MID
-            y: 10
-            text: "HOME ENVIRONMENT"
-            text_font: roboto_24
+            y: 5
+            text: "SMART HOME"
+            text_font: roboto_16
             text_color: 0xFFFFFF
 
-        # Temperature Card
+        # Temperature Card (Top Left)
         - obj:
-            x: 10
-            y: 60
-            width: 300
-            height: 70
+            x: 5
+            y: 30
+            width: 150
+            height: 60
             border_width: 2
             border_color: 0x00AAFF
             bg_color: 0x001F3F
-            radius: 8
+            radius: 5
             widgets:
               - label:
                   align: TOP_LEFT
-                  x: 10
-                  y: 10
+                  x: 5
+                  y: 5
                   text: "Temperature"
-                  text_font: roboto_16
+                  text_font: roboto_12
                   text_color: 0xAADDFF
               - label:
                   id: temp_value
                   align: CENTER
                   y: 5
                   text: "--°F"
-                  text_font: roboto_32
+                  text_font: roboto_24
                   text_color: 0xFFFFFF
 
-        # Humidity Card
+        # Humidity Card (Top Right)
         - obj:
-            x: 10
-            y: 140
-            width: 300
-            height: 70
+            x: 165
+            y: 30
+            width: 150
+            height: 60
             border_width: 2
             border_color: 0x00FF88
             bg_color: 0x003F2F
-            radius: 8
+            radius: 5
             widgets:
               - label:
                   align: TOP_LEFT
-                  x: 10
-                  y: 10
+                  x: 5
+                  y: 5
                   text: "Humidity"
-                  text_font: roboto_16
+                  text_font: roboto_12
                   text_color: 0xAAFFDD
               - label:
                   id: humidity_value
                   align: CENTER
                   y: 5
                   text: "--%"
-                  text_font: roboto_32
+                  text_font: roboto_24
                   text_color: 0xFFFFFF
+
+        # Fan Control Card (Bottom)
+        - obj:
+            x: 5
+            y: 100
+            width: 310
+            height: 105
+            border_width: 2
+            border_color: 0xFFAA00
+            bg_color: 0x2F2000
+            radius: 5
+            widgets:
+              - label:
+                  align: TOP_LEFT
+                  x: 5
+                  y: 5
+                  text: "Ceiling Fan"
+                  text_font: roboto_16
+                  text_color: 0xFFDDAA
+              - label:
+                  id: fan_status
+                  align: TOP_LEFT
+                  x: 5
+                  y: 30
+                  text: "Status: OFF"
+                  text_font: roboto_12
+                  text_color: 0xFF0000
+              - label:
+                  id: fan_speed
+                  align: TOP_LEFT
+                  x: 5
+                  y: 50
+                  text: "Speed: 0%"
+                  text_font: roboto_12
+                  text_color: 0xFFFFFF
+              - button:
+                  align: BOTTOM_LEFT
+                  x: 5
+                  y: -5
+                  width: 90
+                  height: 30
+                  bg_color: 0xFF6600
+                  widgets:
+                    - label:
+                        text: "TOGGLE"
+                        text_font: roboto_12
+                  on_click:
+                    - homeassistant.service:
+                        service: fan.toggle
+                        data:
+                          entity_id: !secret ceiling_fan_entity
+              - button:
+                  align: BOTTOM_MID
+                  y: -5
+                  width: 90
+                  height: 30
+                  bg_color: 0x4444FF
+                  widgets:
+                    - label:
+                        text: "SPEED +"
+                        text_font: roboto_12
+                  on_click:
+                    - homeassistant.service:
+                        service: fan.increase_speed
+                        data:
+                          entity_id: !secret ceiling_fan_entity
+              - button:
+                  align: BOTTOM_RIGHT
+                  x: -5
+                  y: -5
+                  width: 90
+                  height: 30
+                  bg_color: 0x4444FF
+                  widgets:
+                    - label:
+                        text: "SPEED -"
+                        text_font: roboto_12
+                  on_click:
+                    - homeassistant.service:
+                        service: fan.decrease_speed
+                        data:
+                          entity_id: !secret ceiling_fan_entity
 
         # Time display
         - label:
             id: time_label
             align: BOTTOM_MID
-            y: -20
+            y: -5
             text_font: roboto_12
             text_color: 0x808080
 
@@ -311,6 +393,23 @@ time:
 # Sensors from Home Assistant
 # -------------------
 
+# Import states from Home Assistant
+binary_sensor:
+  - platform: homeassistant
+    name: "Fan State"
+    id: fan_state
+    entity_id: !secret ceiling_fan_entity
+    internal: true
+    on_state:
+      - lvgl.label.update:
+          id: fan_status
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
+      - lvgl.label.update:
+          id: fan_status
+          text_color: !lambda |-
+            return x ? lv_color_hex(0x00FF00) : lv_color_hex(0xFF0000);
+
 sensor:
   - platform: homeassistant
     name: "Indoor Temperature"
@@ -345,6 +444,20 @@ sensor:
     update_interval: 60s
 
 text_sensor:
+  - platform: homeassistant
+    name: "Fan Speed Text"
+    id: fan_speed_text
+    entity_id: !secret ceiling_fan_entity
+    attribute: percentage
+    internal: true
+    on_value:
+      - lvgl.label.update:
+          id: fan_speed
+          text: !lambda |-
+            char buf[32];
+            sprintf(buf, "Speed: %s%%", x.c_str());
+            return buf;
+
   - platform: wifi_info
     ip_address:
       name: "IP Address"
