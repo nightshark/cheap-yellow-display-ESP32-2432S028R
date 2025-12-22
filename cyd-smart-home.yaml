@@ -89,11 +89,9 @@ font:
   - file: "gfonts://Roboto"
     id: roboto_24
     size: 24
-    weight: bold
   - file: "gfonts://Roboto"
     id: roboto_32
     size: 32
-    weight: bold
   - file: "gfonts://Roboto"
     id: roboto_12
     size: 12
