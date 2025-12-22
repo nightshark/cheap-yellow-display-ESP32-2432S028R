@@ -25,7 +25,7 @@ interval:
       - lvgl.label.update:
           id: wifi_status
           text: !lambda |-
-            return id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
+            return std::string(id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected");
       - lvgl.label.update:
           id: wifi_status
           text_color: !lambda |-
@@ -280,7 +280,7 @@ time:
                 char buf[32];
                 auto time = id(homeassistant_time).now();
                 sprintf(buf, "%02d:%02d:%02d", time.hour, time.minute, time.second);
-                return buf;
+                return std::string(buf);
 
 # -------------------
 # Sensors from Home Assistant
@@ -297,7 +297,7 @@ binary_sensor:
       - lvgl.label.update:
           id: fan_status
           text: !lambda |-
-            return x ? "Status: ON" : "Status: OFF";
+            return std::string(x ? "Status: ON" : "Status: OFF");
       - lvgl.label.update:
           id: fan_status
           text_color: !lambda |-
@@ -315,7 +315,7 @@ sensor:
           text: !lambda |-
             char buf[32];
             sprintf(buf, "%.1f°F", x);
-            return buf;
+            return std::string(buf);
 
   - platform: homeassistant
     name: "Indoor Humidity"
@@ -328,7 +328,7 @@ sensor:
           text: !lambda |-
             char buf[32];
             sprintf(buf, "%.0f%%", x);
-            return buf;
+            return std::string(buf);
 
   # WiFi Signal Sensor
   - platform: wifi_signal
@@ -349,7 +349,7 @@ text_sensor:
           text: !lambda |-
             char buf[32];
             sprintf(buf, "Speed: %s%%", x.c_str());
-            return buf;
+            return std::string(buf);
 
   - platform: wifi_info
     ip_address:
