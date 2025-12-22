@@ -34,7 +34,7 @@ interval:
 wifi:
   id: wifi_component
   manual_ip:
-    static_ip: 192.168.1.113
+    static_ip: 192.168.1.222
     gateway: 192.168.1.1
     subnet: 255.255.255.1
 
