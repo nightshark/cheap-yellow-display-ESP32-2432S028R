@@ -2,6 +2,11 @@ substitutions:
   device_name: "cyd-smart-home-display"
   friendly_name: "Smart Home Display"
 
+  # Home Assistant Entity IDs
+  temperature_sensor: "sensor.your_temperature_sensor"
+  humidity_sensor: "sensor.your_humidity_sensor"
+  ceiling_fan: "fan.your_ceiling_fan"
+
 # Import common configurations
 packages:
   common: !include templates/common.yaml
@@ -209,7 +214,7 @@ lvgl:
                     - homeassistant.service:
                         service: fan.toggle
                         data:
-                          entity_id: !secret ceiling_fan_entity
+                          entity_id: ${ceiling_fan}
               - button:
                   align: BOTTOM_MID
                   y: -5
@@ -224,7 +229,7 @@ lvgl:
                     - homeassistant.service:
                         service: fan.increase_speed
                         data:
-                          entity_id: !secret ceiling_fan_entity
+                          entity_id: ${ceiling_fan}
               - button:
                   align: BOTTOM_RIGHT
                   x: -5
@@ -240,7 +245,7 @@ lvgl:
                     - homeassistant.service:
                         service: fan.decrease_speed
                         data:
-                          entity_id: !secret ceiling_fan_entity
+                          entity_id: ${ceiling_fan}
 
         # Time display
         - label:
@@ -286,7 +291,7 @@ binary_sensor:
   - platform: homeassistant
     name: "Fan State"
     id: fan_state
-    entity_id: !secret ceiling_fan_entity
+    entity_id: ${ceiling_fan}
     internal: true
     on_state:
       - lvgl.label.update:
@@ -302,7 +307,7 @@ sensor:
   - platform: homeassistant
     name: "Indoor Temperature"
     id: indoor_temp
-    entity_id: !secret temperature_sensor_entity
+    entity_id: ${temperature_sensor}
     internal: true
     on_value:
       - lvgl.label.update:
@@ -315,7 +320,7 @@ sensor:
   - platform: homeassistant
     name: "Indoor Humidity"
     id: indoor_humidity
-    entity_id: !secret humidity_sensor_entity
+    entity_id: ${humidity_sensor}
     internal: true
     on_value:
       - lvgl.label.update:
@@ -335,7 +340,7 @@ text_sensor:
   - platform: homeassistant
     name: "Fan Speed Text"
     id: fan_speed_text
-    entity_id: !secret ceiling_fan_entity
+    entity_id: ${ceiling_fan}
     attribute: percentage
     internal: true
     on_value:
