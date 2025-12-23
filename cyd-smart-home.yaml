@@ -292,12 +292,14 @@ sensor:
     entity_id: ${temperature_sensor}
     internal: true
     on_value:
-      - lambda: |-
-          auto temp = x;
-          auto hum = id(indoor_humidity).state;
-          char buf[64];
-          sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
-          id(temp_humidity_label).set_text(buf);
+      - lvgl.label.update:
+          id: temp_humidity_label
+          text: !lambda |-
+            auto temp = x;
+            auto hum = id(indoor_humidity).state;
+            char buf[64];
+            sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
+            return std::string(buf);
 
   - platform: homeassistant
     name: "Indoor Humidity"
@@ -305,12 +307,14 @@ sensor:
     entity_id: ${humidity_sensor}
     internal: true
     on_value:
-      - lambda: |-
-          auto temp = id(indoor_temp).state;
-          auto hum = x;
-          char buf[64];
-          sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
-          id(temp_humidity_label).set_text(buf);
+      - lvgl.label.update:
+          id: temp_humidity_label
+          text: !lambda |-
+            auto temp = id(indoor_temp).state;
+            auto hum = x;
+            char buf[64];
+            sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
+            return std::string(buf);
 
   # WiFi Signal Sensor
   - platform: wifi_signal
