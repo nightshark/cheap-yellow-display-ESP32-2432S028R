@@ -6,6 +6,7 @@ substitutions:
   temperature_sensor: "sensor.your_temperature_sensor"
   humidity_sensor: "sensor.your_humidity_sensor"
   ceiling_fan: "fan.your_ceiling_fan"
+  ceiling_fan_light: "light.your_ceiling_fan_light"
 
 # Import common configurations
 packages:
@@ -103,163 +104,148 @@ lvgl:
   pages:
     - id: main_page
       widgets:
-        # Header
-        - label:
-            align: TOP_MID
-            y: 5
-            text: "SMART HOME"
-            text_font: roboto_16
-            text_color: 0xFFFFFF
-
-        # Temperature Card (Top Left)
+        # Header with time
         - obj:
-            x: 5
-            y: 30
-            width: 150
-            height: 60
-            border_width: 2
-            border_color: 0x00AAFF
-            bg_color: 0x001F3F
-            radius: 5
+            x: 0
+            y: 0
+            width: 320
+            height: 30
+            bg_color: 0x0066CC
+            border_width: 0
             widgets:
               - label:
-                  align: TOP_LEFT
-                  x: 5
-                  y: 5
-                  text: "Temperature"
-                  text_font: roboto_12
-                  text_color: 0xAADDFF
-              - label:
-                  id: temp_value
-                  align: CENTER
-                  y: 5
-                  text: "--°F"
-                  text_font: roboto_24
-                  text_color: 0xFFFFFF
-
-        # Humidity Card (Top Right)
-        - obj:
-            x: 165
-            y: 30
-            width: 150
-            height: 60
-            border_width: 2
-            border_color: 0x00FF88
-            bg_color: 0x003F2F
-            radius: 5
-            widgets:
-              - label:
-                  align: TOP_LEFT
-                  x: 5
-                  y: 5
-                  text: "Humidity"
-                  text_font: roboto_12
-                  text_color: 0xAAFFDD
-              - label:
-                  id: humidity_value
-                  align: CENTER
-                  y: 5
-                  text: "--%"
-                  text_font: roboto_24
-                  text_color: 0xFFFFFF
-
-        # Fan Control Card (Bottom)
-        - obj:
-            x: 5
-            y: 100
-            width: 310
-            height: 105
-            border_width: 2
-            border_color: 0xFFAA00
-            bg_color: 0x2F2000
-            radius: 5
-            widgets:
-              - label:
-                  align: TOP_LEFT
-                  x: 5
-                  y: 5
-                  text: "Ceiling Fan"
+                  align: LEFT_MID
+                  x: 10
+                  text: "Home (1/2)"
                   text_font: roboto_16
-                  text_color: 0xFFDDAA
+                  text_color: 0xFFFFFF
               - label:
-                  id: fan_status
-                  align: TOP_LEFT
-                  x: 5
-                  y: 30
-                  text: "Status: OFF"
-                  text_font: roboto_12
-                  text_color: 0xFF0000
+                  id: time_label
+                  align: RIGHT_MID
+                  x: -10
+                  text: "00:00"
+                  text_font: roboto_16
+                  text_color: 0xFFFFFF
+
+        # Temp & Humidity Info Row
+        - label:
+            x: 10
+            y: 40
+            text_font: roboto_12
+            text_color: 0xFFFFFF
+            id: temp_humidity_label
+            text: "-- | --%"
+
+        # Grid of control buttons (2x2)
+        # Row 1, Col 1 - Fan Light
+        - button:
+            x: 10
+            y: 60
+            width: 145
+            height: 70
+            bg_color: 0x004488
+            widgets:
               - label:
-                  id: fan_speed
-                  align: TOP_LEFT
-                  x: 5
-                  y: 50
-                  text: "Speed: 0%"
+                  align: TOP_MID
+                  y: 8
+                  text: "\U0001F4A1"
+                  text_font: roboto_24
+                  text_color: 0xFFDD00
+              - label:
+                  id: fan_light_label
+                  align: BOTTOM_MID
+                  y: -8
+                  text: "Fan Light"
                   text_font: roboto_12
                   text_color: 0xFFFFFF
-              - button:
-                  align: BOTTOM_LEFT
-                  x: 5
-                  y: -5
-                  width: 90
-                  height: 30
-                  bg_color: 0xFF6600
-                  widgets:
-                    - label:
-                        text: "TOGGLE"
-                        text_font: roboto_12
-                  on_click:
-                    - homeassistant.service:
-                        service: fan.toggle
-                        data:
-                          entity_id: ${ceiling_fan}
-              - button:
+            on_click:
+              - homeassistant.service:
+                  service: light.toggle
+                  data:
+                    entity_id: ${ceiling_fan_light}
+
+        # Row 1, Col 2 - Ceiling Fan
+        - button:
+            x: 165
+            y: 60
+            width: 145
+            height: 70
+            bg_color: 0x004488
+            widgets:
+              - label:
+                  align: TOP_MID
+                  y: 8
+                  text: "\U0001F4A8"
+                  text_font: roboto_24
+                  text_color: 0x00DDFF
+              - label:
+                  id: fan_status_label
                   align: BOTTOM_MID
-                  y: -5
-                  width: 90
-                  height: 30
-                  bg_color: 0x4444FF
-                  widgets:
-                    - label:
-                        text: "SPEED +"
-                        text_font: roboto_12
-                  on_click:
-                    - homeassistant.service:
-                        service: fan.increase_speed
-                        data:
-                          entity_id: ${ceiling_fan}
-              - button:
-                  align: BOTTOM_RIGHT
-                  x: -5
-                  y: -5
-                  width: 90
-                  height: 30
-                  bg_color: 0x4444FF
-                  widgets:
-                    - label:
-                        text: "SPEED -"
-                        text_font: roboto_12
-                  on_click:
-                    - homeassistant.service:
-                        service: fan.decrease_speed
-                        data:
-                          entity_id: ${ceiling_fan}
+                  y: -8
+                  text: "Fan: OFF"
+                  text_font: roboto_12
+                  text_color: 0xFFFFFF
+            on_click:
+              - homeassistant.service:
+                  service: fan.toggle
+                  data:
+                    entity_id: ${ceiling_fan}
 
-        # Time display
-        - label:
-            id: time_label
-            align: BOTTOM_MID
-            y: -5
-            text_font: roboto_12
-            text_color: 0x808080
+        # Row 2, Col 1 - Fan Speed
+        - button:
+            x: 10
+            y: 140
+            width: 145
+            height: 70
+            bg_color: 0x004488
+            widgets:
+              - label:
+                  align: TOP_MID
+                  y: 8
+                  text: "+"
+                  text_font: roboto_24
+                  text_color: 0x00FF88
+              - label:
+                  align: BOTTOM_MID
+                  y: -8
+                  text: "Speed Up"
+                  text_font: roboto_12
+                  text_color: 0xFFFFFF
+            on_click:
+              - homeassistant.service:
+                  service: fan.increase_speed
+                  data:
+                    entity_id: ${ceiling_fan}
 
-        # WiFi Status
+        # Row 2, Col 2 - RGB LED
+        - button:
+            x: 165
+            y: 140
+            width: 145
+            height: 70
+            bg_color: 0x004488
+            widgets:
+              - label:
+                  align: TOP_MID
+                  y: 8
+                  text: "\U0001F308"
+                  text_font: roboto_24
+                  text_color: 0xFF00FF
+              - label:
+                  align: BOTTOM_MID
+                  y: -8
+                  text: "RGB LED"
+                  text_font: roboto_12
+                  text_color: 0xFFFFFF
+            on_click:
+              - light.toggle: rgb_led
+
+        # WiFi Status (bottom left)
         - label:
             id: wifi_status
-            align: BOTTOM_LEFT
-            x: 5
-            y: -5
-            text: "WiFi: Connected"
+            x: 10
+            y: 220
+            text: "WiFi"
             text_font: roboto_12
             text_color: 0x00FF00
 
@@ -270,14 +256,16 @@ time:
   - platform: homeassistant
     id: homeassistant_time
     on_time:
-      - seconds: /10
+      - seconds: /30
         then:
           - lvgl.label.update:
               id: time_label
               text: !lambda |-
                 char buf[32];
                 auto time = id(homeassistant_time).now();
-                sprintf(buf, "%02d:%02d:%02d", time.hour, time.minute, time.second);
+                int hour = time.hour % 12;
+                if (hour == 0) hour = 12;
+                sprintf(buf, "%02d:%02d %s", hour, time.minute, time.hour >= 12 ? "PM" : "AM");
                 return std::string(buf);
 
 # -------------------
@@ -293,13 +281,9 @@ binary_sensor:
     internal: true
     on_state:
       - lvgl.label.update:
-          id: fan_status
+          id: fan_status_label
           text: !lambda |-
-            return std::string(x ? "Status: ON" : "Status: OFF");
-      - lvgl.label.update:
-          id: fan_status
-          text_color: !lambda |-
-            return x ? lv_color_hex(0x00FF00) : lv_color_hex(0xFF0000);
+            return std::string(x ? "Fan: ON" : "Fan: OFF");
 
 sensor:
   - platform: homeassistant
@@ -308,12 +292,12 @@ sensor:
     entity_id: ${temperature_sensor}
     internal: true
     on_value:
-      - lvgl.label.update:
-          id: temp_value
-          text: !lambda |-
-            char buf[32];
-            sprintf(buf, "%.1f°F", x);
-            return std::string(buf);
+      - lambda: |-
+          auto temp = x;
+          auto hum = id(indoor_humidity).state;
+          char buf[64];
+          sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
+          id(temp_humidity_label).set_text(buf);
 
   - platform: homeassistant
     name: "Indoor Humidity"
@@ -321,12 +305,12 @@ sensor:
     entity_id: ${humidity_sensor}
     internal: true
     on_value:
-      - lvgl.label.update:
-          id: humidity_value
-          text: !lambda |-
-            char buf[32];
-            sprintf(buf, "%.0f%%", x);
-            return std::string(buf);
+      - lambda: |-
+          auto temp = id(indoor_temp).state;
+          auto hum = x;
+          char buf[64];
+          sprintf(buf, "%.1f°F | %.0f%%", temp, hum);
+          id(temp_humidity_label).set_text(buf);
 
   # WiFi Signal Sensor
   - platform: wifi_signal
@@ -335,20 +319,6 @@ sensor:
     update_interval: 60s
 
 text_sensor:
-  - platform: homeassistant
-    name: "Fan Speed Text"
-    id: fan_speed_text
-    entity_id: ${ceiling_fan}
-    attribute: percentage
-    internal: true
-    on_value:
-      - lvgl.label.update:
-          id: fan_speed
-          text: !lambda |-
-            char buf[32];
-            sprintf(buf, "Speed: %s%%", x.c_str());
-            return std::string(buf);
-
   - platform: wifi_info
     ip_address:
       name: "IP Address"
