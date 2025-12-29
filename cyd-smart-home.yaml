@@ -235,11 +235,11 @@ lvgl:
                         styles: style_card_title
                     - label:
                         id: fan_status_label
-                        text: "Status: OFF"
-                        styles: style_status_off
+                        text: "Status: --"
+                        styles: style_info_text
                     - label:
                         id: fan_speed_label
-                        text: "Speed: 0%"
+                        text: "Speed: --%"
                         styles: style_info_text
                     - label:
                         text: "[TAP TO TOGGLE]"
@@ -342,60 +342,6 @@ lvgl:
                         text: "--:--"
                         text_align: RIGHT
 
-# Update LVGL labels based on Home Assistant states
-  on_idle:
-    timeout: 5s
-    then:
-      - lambda: |
-          // Update Fan Status
-          auto fan_status = id(fan_status_label);
-          if (id(fan_state).state) {
-            fan_status->set_text("Status: ON");
-            fan_status->add_style(id(style_status_on));
-            fan_status->remove_style(id(style_status_off));
-          } else {
-            fan_status->set_text("Status: OFF");
-            fan_status->add_style(id(style_status_off));
-            fan_status->remove_style(id(style_status_on));
-          }
-
-          // Update Fan Speed
-          std::string speed_text = "Speed: " + id(fan_speed_text).state + "%";
-          id(fan_speed_label)->set_text(speed_text.c_str());
-
-          // Update HVAC Status
-          auto hvac_status = id(hvac_status_label);
-          if (id(hvac_state).state) {
-            hvac_status->set_text("Status: ON");
-            hvac_status->add_style(id(style_status_on));
-            hvac_status->remove_style(id(style_status_off));
-          } else {
-            hvac_status->set_text("Status: OFF");
-            hvac_status->add_style(id(style_status_off));
-            hvac_status->remove_style(id(style_status_on));
-          }
-
-          // Update HVAC Temperature
-          char temp_buf[32];
-          snprintf(temp_buf, sizeof(temp_buf), "Target: %.1f°F", id(hvac_target_temp).state);
-          id(hvac_temp_label)->set_text(temp_buf);
-
-          // Update HVAC Mode
-          std::string mode_text = "Mode: " + id(hvac_mode_text).state;
-          id(hvac_mode_label)->set_text(mode_text.c_str());
-
-          // Update WiFi Status
-          if (id(wifi_component).is_connected()) {
-            id(wifi_status_label)->set_text("WiFi: Connected");
-          } else {
-            id(wifi_status_label)->set_text("WiFi: Disconnected");
-          }
-
-          // Update Time
-          auto time = id(homeassistant_time).now();
-          char time_buf[32];
-          snprintf(time_buf, sizeof(time_buf), "%02d:%02d", time.hour, time.minute);
-          id(time_label)->set_text(time_buf);
 
 # -------------------
 # RGB LED on the back
@@ -438,6 +384,20 @@ time:
   - platform: homeassistant
     id: homeassistant_time
 
+# Update time and WiFi status every 10 seconds
+interval:
+  - interval: 10s
+    then:
+      - lvgl.label.update:
+          id: time_label
+          text:
+            time_format: "%H:%M"
+            time: homeassistant_time
+      - lvgl.label.update:
+          id: wifi_status_label
+          text: !lambda |-
+            return id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
+
 # -------------------
 # Sensors from Home Assistant
 # -------------------
@@ -449,12 +409,20 @@ binary_sensor:
     id: fan_state
     entity_id: fan.ifan_bedroom_001_fan
     internal: true
+    on_state:
+      - lvgl.label.update:
+          id: fan_status_label
+          text: !lambda return x ? "Status: ON" : "Status: OFF";
 
   - platform: homeassistant
     name: "HVAC State"
     id: hvac_state
     entity_id: climate.t6_pro_z_wave_thermostat
     internal: true
+    on_state:
+      - lvgl.label.update:
+          id: hvac_status_label
+          text: !lambda return x ? "Status: ON" : "Status: OFF";
 
 sensor:
   - platform: homeassistant
@@ -463,6 +431,12 @@ sensor:
     entity_id: climate.t6_pro_z_wave_thermostat
     attribute: temperature
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: hvac_temp_label
+          text:
+            format: "Target: %.1f°F"
+            args: [x]
 
   - platform: homeassistant
     name: "HVAC Current Temperature"
@@ -484,6 +458,10 @@ text_sensor:
     entity_id: fan.ifan_bedroom_001_fan
     attribute: percentage
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: fan_speed_label
+          text: !lambda return "Speed: " + x + "%";
 
   - platform: homeassistant
     name: "HVAC Mode Text"
@@ -491,6 +469,10 @@ text_sensor:
     entity_id: climate.t6_pro_z_wave_thermostat
     attribute: hvac_mode
     internal: true
+    on_value:
+      - lvgl.label.update:
+          id: hvac_mode_label
+          text: !lambda return "Mode: " + x;
 
   - platform: wifi_info
     ip_address:
