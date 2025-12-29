@@ -412,7 +412,8 @@ binary_sensor:
     on_state:
       - lvgl.label.update:
           id: fan_status_label
-          text: !lambda return x ? "Status: ON" : "Status: OFF";
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
 
   - platform: homeassistant
     name: "HVAC State"
@@ -422,7 +423,8 @@ binary_sensor:
     on_state:
       - lvgl.label.update:
           id: hvac_status_label
-          text: !lambda return x ? "Status: ON" : "Status: OFF";
+          text: !lambda |-
+            return x ? "Status: ON" : "Status: OFF";
 
 sensor:
   - platform: homeassistant
@@ -461,7 +463,8 @@ text_sensor:
     on_value:
       - lvgl.label.update:
           id: fan_speed_label
-          text: !lambda return "Speed: " + x + "%";
+          text: !lambda |-
+            return "Speed: " + x + "%";
 
   - platform: homeassistant
     name: "HVAC Mode Text"
@@ -472,7 +475,8 @@ text_sensor:
     on_value:
       - lvgl.label.update:
           id: hvac_mode_label
-          text: !lambda return "Mode: " + x;
+          text: !lambda |-
+            return "Mode: " + x;
 
   - platform: wifi_info
     ip_address:
