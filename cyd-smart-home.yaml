@@ -223,7 +223,7 @@ lvgl:
                     - homeassistant.service:
                         service: fan.toggle
                         data:
-                          entity_id: !secret ceiling_fan_entity
+                          entity_id: fan.ifan_bedroom_001_fan
                   layout:
                     type: flex
                     flex_flow: column
@@ -257,7 +257,7 @@ lvgl:
                     - homeassistant.service:
                         service: climate.toggle
                         data:
-                          entity_id: !secret hvac_entity
+                          entity_id: climate.t6_pro_z_wave_thermostat
                   layout:
                     type: flex
                     flex_flow: column
@@ -446,27 +446,27 @@ binary_sensor:
   - platform: homeassistant
     name: "Fan State"
     id: fan_state
-    entity_id: !secret ceiling_fan_entity
+    entity_id: fan.ifan_bedroom_001_fan
     internal: true
 
   - platform: homeassistant
     name: "HVAC State"
     id: hvac_state
-    entity_id: !secret hvac_entity
+    entity_id: climate.t6_pro_z_wave_thermostat
     internal: true
 
 sensor:
   - platform: homeassistant
     name: "HVAC Target Temperature"
     id: hvac_target_temp
-    entity_id: !secret hvac_entity
+    entity_id: climate.t6_pro_z_wave_thermostat
     attribute: temperature
     internal: true
 
   - platform: homeassistant
     name: "HVAC Current Temperature"
     id: hvac_current_temp
-    entity_id: !secret hvac_entity
+    entity_id: climate.t6_pro_z_wave_thermostat
     attribute: current_temperature
     internal: true
 
@@ -480,14 +480,14 @@ text_sensor:
   - platform: homeassistant
     name: "Fan Speed Text"
     id: fan_speed_text
-    entity_id: !secret ceiling_fan_entity
+    entity_id: fan.ifan_bedroom_001_fan
     attribute: percentage
     internal: true
 
   - platform: homeassistant
     name: "HVAC Mode Text"
     id: hvac_mode_text
-    entity_id: !secret hvac_entity
+    entity_id: climate.t6_pro_z_wave_thermostat
     attribute: hvac_mode
     internal: true
 
@@ -509,7 +509,7 @@ button:
       - homeassistant.service:
           service: fan.increase_speed
           data:
-            entity_id: !secret ceiling_fan_entity
+            entity_id: fan.ifan_bedroom_001_fan
 
   - platform: template
     name: "Fan Speed Down"
@@ -517,7 +517,7 @@ button:
       - homeassistant.service:
           service: fan.decrease_speed
           data:
-            entity_id: !secret ceiling_fan_entity
+            entity_id: fan.ifan_bedroom_001_fan
 
   - platform: template
     name: "HVAC Temp Up"
@@ -525,7 +525,7 @@ button:
       - homeassistant.service:
           service: climate.set_temperature
           data:
-            entity_id: !secret hvac_entity
+            entity_id: climate.t6_pro_z_wave_thermostat
             temperature: !lambda "return id(hvac_target_temp).state + 1;"
 
   - platform: template
@@ -534,7 +534,7 @@ button:
       - homeassistant.service:
           service: climate.set_temperature
           data:
-            entity_id: !secret hvac_entity
+            entity_id: climate.t6_pro_z_wave_thermostat
             temperature: !lambda "return id(hvac_target_temp).state - 1;"
 
 # -------------------
@@ -552,7 +552,7 @@ number:
       - homeassistant.service:
           service: fan.set_percentage
           data:
-            entity_id: !secret ceiling_fan_entity
+            entity_id: fan.ifan_bedroom_001_fan
             percentage: !lambda "return x;"
 
   - platform: template
@@ -566,7 +566,7 @@ number:
       - homeassistant.service:
           service: climate.set_temperature
           data:
-            entity_id: !secret hvac_entity
+            entity_id: climate.t6_pro_z_wave_thermostat
             temperature: !lambda "return x;"
 
 # -------------------
@@ -585,7 +585,7 @@ select:
       - homeassistant.service:
           service: climate.set_hvac_mode
           data:
-            entity_id: !secret hvac_entity
+            entity_id: climate.t6_pro_z_wave_thermostat
             hvac_mode: !lambda "return x;"
 
 wifi:
