@@ -304,7 +304,7 @@ lvgl:
                         layout: horizontal
                         pad_all: 2
                         widgets:
-                          - btn:
+                          - button:
                               id: all_off_btn
                               width: 45%
                               on_click:
@@ -314,7 +314,7 @@ lvgl:
                                 - label:
                                     text: "All Off"
                                     text_color: 0xFF8800
-                          - btn:
+                          - button:
                               id: all_on_btn
                               width: 45%
                               on_click:
@@ -345,7 +345,8 @@ lvgl:
 # Update LVGL labels based on Home Assistant states
   on_idle:
     timeout: 5s
-    - lambda: |-
+    then:
+      - lambda: |-
         // Update Fan Status
         auto fan_status = id(fan_status_label);
         if (id(fan_state).state) {
