@@ -398,7 +398,11 @@ interval:
       - lvgl.label.update:
           id: wifi_status_label
           text: !lambda |-
-            return id(wifi_component).is_connected() ? "WiFi: Connected" : "WiFi: Disconnected";
+            if (id(wifi_component).is_connected()) {
+              return "WiFi: Connected";
+            } else {
+              return "WiFi: Disconnected";
+            }
 
 # -------------------
 # Sensors from Home Assistant
@@ -415,7 +419,11 @@ binary_sensor:
       - lvgl.label.update:
           id: fan_status_label
           text: !lambda |-
-            return x ? "Status: ON" : "Status: OFF";
+            if (x) {
+              return "Status: ON";
+            } else {
+              return "Status: OFF";
+            }
 
   - platform: homeassistant
     name: "HVAC State"
@@ -426,7 +434,11 @@ binary_sensor:
       - lvgl.label.update:
           id: hvac_status_label
           text: !lambda |-
-            return x ? "Status: ON" : "Status: OFF";
+            if (x) {
+              return "Status: ON";
+            } else {
+              return "Status: OFF";
+            }
 
 sensor:
   - platform: homeassistant
@@ -466,7 +478,7 @@ text_sensor:
       - lvgl.label.update:
           id: fan_speed_label
           text: !lambda |-
-            return "Speed: " + x + "%";
+            return ("Speed: " + x + "%").c_str();
 
   - platform: homeassistant
     name: "HVAC Mode Text"
@@ -478,7 +490,7 @@ text_sensor:
       - lvgl.label.update:
           id: hvac_mode_label
           text: !lambda |-
-            return "Mode: " + x;
+            return ("Mode: " + x).c_str();
 
   - platform: wifi_info
     ip_address:
