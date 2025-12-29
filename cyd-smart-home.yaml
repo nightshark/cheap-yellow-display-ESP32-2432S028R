@@ -327,20 +327,19 @@ binary_sensor:
     entity_id: fan.ifan_bedroom_001_fan
     internal: true
     on_state:
-      - lvgl.label.update:
-          id: fan_status
-          text: !lambda |-
-            if (x) {
-              return "ON";
-            } else {
-              return "OFF";
-            }
-          text_color: !lambda |-
-            if (x) {
-              return 0x4CAF50;
-            } else {
-              return 0xFF5252;
-            }
+      - if:
+          condition:
+            lambda: return x;
+          then:
+            - lvgl.label.update:
+                id: fan_status
+                text: "ON"
+                text_color: 0x4CAF50
+          else:
+            - lvgl.label.update:
+                id: fan_status
+                text: "OFF"
+                text_color: 0xFF5252
 
 sensor:
   - platform: homeassistant
