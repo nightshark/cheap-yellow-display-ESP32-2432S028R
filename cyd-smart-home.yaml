@@ -42,57 +42,44 @@ web_server:
 # Display Configuration
 # -------------------
 
-# Define colors
+# Define colors (LVGL uses hex format)
 color:
-  - id: my_red
-    red: 100%
-    green: 0%
-    blue: 0%
-  - id: my_green
-    red: 0%
-    green: 100%
-    blue: 0%
-  - id: my_blue
-    red: 0%
-    green: 0%
-    blue: 100%
-  - id: my_white
-    red: 100%
-    green: 100%
-    blue: 100%
-  - id: my_black
-    red: 0%
-    green: 0%
-    blue: 0%
-  - id: my_yellow
-    red: 100%
-    green: 100%
-    blue: 0%
-  - id: my_orange
-    red: 100%
-    green: 50%
-    blue: 0%
-  - id: my_gray
-    red: 50%
-    green: 50%
-    blue: 50%
-  - id: light_gray
-    red: 80%
-    green: 80%
-    blue: 80%
+  - id: color_blue
+    hex: "0066CC"
+  - id: color_green
+    hex: "00CC00"
+  - id: color_red
+    hex: "CC0000"
+  - id: color_orange
+    hex: "FF8800"
+  - id: color_gray
+    hex: "808080"
+  - id: color_light_gray
+    hex: "CCCCCC"
+  - id: color_white
+    hex: "FFFFFF"
+  - id: color_black
+    hex: "000000"
 
 # Fonts
 font:
   - file: "gfonts://Roboto"
     id: roboto_16
     size: 16
+    bpp: 4
   - file: "gfonts://Roboto"
     id: roboto_24
     size: 24
     weight: bold
+    bpp: 4
   - file: "gfonts://Roboto"
     id: roboto_12
     size: 12
+    bpp: 4
+  - file: "gfonts://Roboto"
+    id: roboto_14
+    size: 14
+    bpp: 4
 
 # SPI Configuration for Display
 spi:
@@ -115,54 +102,12 @@ display:
     rotation: 90
     invert_colors: true
     id: my_display
-    lambda: |-
-      // Header
-      it.filled_rectangle(0, 0, 320, 30, id(my_blue));
-      it.print(160, 5, id(roboto_16), id(my_white), TextAlign::TOP_CENTER, "SMART HOME CONTROL");
-
-      // Current time
-      it.strftime(160, 220, id(roboto_12), id(my_gray), TextAlign::TOP_CENTER, "%Y-%m-%d %H:%M", id(homeassistant_time).now());
-
-      // Ceiling Fan Section (Top Left)
-      it.rectangle(5, 35, 150, 85, id(my_gray));
-      it.print(10, 40, id(roboto_16), id(my_black), "Ceiling Fan");
-      it.printf(10, 60, id(roboto_12), id(fan_state).state ? id(my_green) : id(my_red),
-                "Status: %s", id(fan_state).state ? "ON" : "OFF");
-      it.printf(10, 75, id(roboto_12), id(my_black), "Speed: %s%%", id(fan_speed_text).state.c_str());
-      it.print(10, 90, id(roboto_12), id(my_blue), "[TAP TO TOGGLE]");
-
-      // HVAC Section (Top Right)
-      it.rectangle(165, 35, 150, 85, id(my_gray));
-      it.print(170, 40, id(roboto_16), id(my_black), "HVAC");
-      it.printf(170, 60, id(roboto_12), id(hvac_state).state ? id(my_green) : id(my_red),
-                "Status: %s", id(hvac_state).state ? "ON" : "OFF");
-      it.printf(170, 75, id(roboto_12), id(my_black), "Target: %.1f°F", id(hvac_target_temp).state);
-      it.printf(170, 90, id(roboto_12), id(my_black), "Mode: %s", id(hvac_mode_text).state.c_str());
-      it.print(170, 105, id(roboto_12), id(my_blue), "[TAP TO CONTROL]");
-
-      // Camera Status (Bottom Left)
-      it.rectangle(5, 125, 150, 45, id(my_gray));
-      it.print(10, 130, id(roboto_16), id(my_black), "Camera");
-      it.printf(10, 150, id(roboto_12), id(camera_enabled).state ? id(my_green) : id(my_red),
-                "Status: %s", id(camera_enabled).state ? "ACTIVE" : "OFF");
-      it.print(10, 165, id(roboto_12), id(my_blue), "[TAP TO VIEW]");
-
-      // Quick Controls (Bottom Right)
-      it.rectangle(165, 125, 150, 45, id(my_gray));
-      it.print(170, 130, id(roboto_16), id(my_black), "Quick Actions");
-      it.print(170, 150, id(roboto_12), id(my_orange), "All Off");
-      it.print(250, 150, id(roboto_12), id(my_green), "All On");
-
-      // Wi-Fi Status
-      if (id(wifi_component).is_connected()) {
-        it.print(5, 220, id(roboto_12), id(my_green), "WiFi: Connected");
-      } else {
-        it.print(5, 220, id(roboto_12), id(my_red), "WiFi: Disconnected");
-      }
+    auto_clear_enabled: false
 
 # Touchscreen Configuration
 touchscreen:
   - platform: xpt2046
+    id: my_touch
     spi_id: touch_spi
     cs_pin: GPIO33
     interrupt_pin: GPIO36
@@ -180,67 +125,317 @@ touchscreen:
               touch.x_raw,
               touch.y_raw
               );
-    binary_sensor:
-      # Ceiling Fan Control Area
-      - name: "Fan Touch Area"
-        id: fan_touch_area
-        x_min: 5
-        x_max: 155
-        y_min: 35
-        y_max: 120
-        on_press:
-          - homeassistant.service:
-              service: fan.toggle
-              data:
-                entity_id: !secret ceiling_fan_entity
 
-      # HVAC Control Area
-      - name: "HVAC Touch Area"
-        id: hvac_touch_area
-        x_min: 165
-        x_max: 315
-        y_min: 35
-        y_max: 120
-        on_press:
-          - homeassistant.service:
-              service: climate.toggle
-              data:
-                entity_id: !secret hvac_entity
+# -------------------
+# LVGL Configuration
+# -------------------
+lvgl:
+  displays:
+    - my_display
+  touchscreens:
+    - my_touch
 
-      # Camera View Area
-      - name: "Camera Touch Area"
-        id: camera_touch_area
-        x_min: 5
-        x_max: 155
-        y_min: 125
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: camera.turn_on
-              data:
-                entity_id: !secret camera_entity
+  color_depth: 16
+  bg_color: 0x000000
 
-      # All Off Button
-      - name: "All Off Touch"
-        id: all_off_touch
-        x_min: 165
-        x_max: 240
-        y_min: 140
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: script.all_devices_off
+  # Define styles
+  style_definitions:
+    - id: style_header
+      bg_color: 0x0066CC
+      bg_opa: COVER
+      text_color: 0xFFFFFF
+      text_font: roboto_16
+      text_align: center
+      pad_all: 5
 
-      # All On Button
-      - name: "All On Touch"
-        id: all_on_touch
-        x_min: 241
-        x_max: 315
-        y_min: 140
-        y_max: 170
-        on_press:
-          - homeassistant.service:
-              service: script.all_devices_on
+    - id: style_card
+      bg_color: 0xFFFFFF
+      bg_opa: COVER
+      border_color: 0x808080
+      border_width: 2
+      border_opa: COVER
+      radius: 8
+      pad_all: 10
+
+    - id: style_card_title
+      text_color: 0x000000
+      text_font: roboto_16
+      text_align: left
+
+    - id: style_status_on
+      text_color: 0x00CC00
+      text_font: roboto_12
+
+    - id: style_status_off
+      text_color: 0xCC0000
+      text_font: roboto_12
+
+    - id: style_info_text
+      text_color: 0x000000
+      text_font: roboto_12
+
+    - id: style_button_text
+      text_color: 0x0066CC
+      text_font: roboto_12
+
+    - id: style_footer
+      text_color: 0x808080
+      text_font: roboto_12
+      bg_opa: TRANSP
+
+  pages:
+    - id: main_page
+      widgets:
+        # Main container with grid layout
+        - obj:
+            width: 100%
+            height: 100%
+            pad_all: 0
+            bg_opa: COVER
+            bg_color: 0x000000
+            layout:
+              type: grid
+              grid_rows: [30px, fr(1), fr(1), 25px]  # Header, Row1, Row2, Footer
+              grid_columns: [fr(1), fr(1)]  # 2 equal columns
+              pad_row: 5
+              pad_column: 5
+            widgets:
+              # ===== HEADER (spans both columns) =====
+              - obj:
+                  id: header_container
+                  grid_cell_row_pos: 0
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 2
+                  styles: style_header
+                  widgets:
+                    - label:
+                        text: "SMART HOME CONTROL"
+                        align: CENTER
+
+              # ===== FAN CARD (Row 1, Column 0) =====
+              - obj:
+                  id: fan_card
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 0
+                  styles: style_card
+                  clickable: true
+                  on_click:
+                    - homeassistant.service:
+                        service: fan.toggle
+                        data:
+                          entity_id: !secret ceiling_fan_entity
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: start
+                    flex_align_cross: start
+                  widgets:
+                    - label:
+                        id: fan_title
+                        text: "Ceiling Fan"
+                        styles: style_card_title
+                    - label:
+                        id: fan_status_label
+                        text: "Status: OFF"
+                        styles: style_status_off
+                    - label:
+                        id: fan_speed_label
+                        text: "Speed: 0%"
+                        styles: style_info_text
+                    - label:
+                        text: "[TAP TO TOGGLE]"
+                        styles: style_button_text
+
+              # ===== HVAC CARD (Row 1, Column 1) =====
+              - obj:
+                  id: hvac_card
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 1
+                  styles: style_card
+                  clickable: true
+                  on_click:
+                    - homeassistant.service:
+                        service: climate.toggle
+                        data:
+                          entity_id: !secret hvac_entity
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: start
+                    flex_align_cross: start
+                  widgets:
+                    - label:
+                        id: hvac_title
+                        text: "HVAC"
+                        styles: style_card_title
+                    - label:
+                        id: hvac_status_label
+                        text: "Status: OFF"
+                        styles: style_status_off
+                    - label:
+                        id: hvac_temp_label
+                        text: "Target: --°F"
+                        styles: style_info_text
+                    - label:
+                        id: hvac_mode_label
+                        text: "Mode: --"
+                        styles: style_info_text
+                    - label:
+                        text: "[TAP TO CONTROL]"
+                        styles: style_button_text
+
+              # ===== CAMERA CARD (Row 2, Column 0) =====
+              - obj:
+                  id: camera_card
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 0
+                  styles: style_card
+                  clickable: true
+                  on_click:
+                    - homeassistant.service:
+                        service: camera.turn_on
+                        data:
+                          entity_id: !secret camera_entity
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: start
+                    flex_align_cross: start
+                  widgets:
+                    - label:
+                        id: camera_title
+                        text: "Camera"
+                        styles: style_card_title
+                    - label:
+                        id: camera_status_label
+                        text: "Status: OFF"
+                        styles: style_status_off
+                    - label:
+                        text: "[TAP TO VIEW]"
+                        styles: style_button_text
+
+              # ===== QUICK ACTIONS CARD (Row 2, Column 1) =====
+              - obj:
+                  id: quick_actions_card
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 1
+                  styles: style_card
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: start
+                    flex_align_cross: stretch
+                  widgets:
+                    - label:
+                        text: "Quick Actions"
+                        styles: style_card_title
+                    - obj:
+                        id: buttons_container
+                        layout: horizontal
+                        pad_all: 2
+                        widgets:
+                          - btn:
+                              id: all_off_btn
+                              width: 45%
+                              on_click:
+                                - homeassistant.service:
+                                    service: script.all_devices_off
+                              widgets:
+                                - label:
+                                    text: "All Off"
+                                    text_color: 0xFF8800
+                          - btn:
+                              id: all_on_btn
+                              width: 45%
+                              on_click:
+                                - homeassistant.service:
+                                    service: script.all_devices_on
+                              widgets:
+                                - label:
+                                    text: "All On"
+                                    text_color: 0x00CC00
+
+              # ===== FOOTER (spans both columns) =====
+              - obj:
+                  id: footer_container
+                  grid_cell_row_pos: 3
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 2
+                  styles: style_footer
+                  layout: horizontal
+                  widgets:
+                    - label:
+                        id: wifi_status_label
+                        text: "WiFi: --"
+                    - label:
+                        id: time_label
+                        text: "--:--"
+                        align: right
+
+# Update LVGL labels based on Home Assistant states
+  on_idle:
+    - lambda: |-
+        // Update Fan Status
+        auto fan_status = id(fan_status_label);
+        if (id(fan_state).state) {
+          fan_status->set_text("Status: ON");
+          fan_status->add_style(id(style_status_on));
+          fan_status->remove_style(id(style_status_off));
+        } else {
+          fan_status->set_text("Status: OFF");
+          fan_status->add_style(id(style_status_off));
+          fan_status->remove_style(id(style_status_on));
+        }
+
+        // Update Fan Speed
+        std::string speed_text = "Speed: " + id(fan_speed_text).state + "%";
+        id(fan_speed_label)->set_text(speed_text.c_str());
+
+        // Update HVAC Status
+        auto hvac_status = id(hvac_status_label);
+        if (id(hvac_state).state) {
+          hvac_status->set_text("Status: ON");
+          hvac_status->add_style(id(style_status_on));
+          hvac_status->remove_style(id(style_status_off));
+        } else {
+          hvac_status->set_text("Status: OFF");
+          hvac_status->add_style(id(style_status_off));
+          hvac_status->remove_style(id(style_status_on));
+        }
+
+        // Update HVAC Temperature
+        char temp_buf[32];
+        snprintf(temp_buf, sizeof(temp_buf), "Target: %.1f°F", id(hvac_target_temp).state);
+        id(hvac_temp_label)->set_text(temp_buf);
+
+        // Update HVAC Mode
+        std::string mode_text = "Mode: " + id(hvac_mode_text).state;
+        id(hvac_mode_label)->set_text(mode_text.c_str());
+
+        // Update Camera Status
+        auto camera_status = id(camera_status_label);
+        if (id(camera_enabled).state) {
+          camera_status->set_text("Status: ACTIVE");
+          camera_status->add_style(id(style_status_on));
+          camera_status->remove_style(id(style_status_off));
+        } else {
+          camera_status->set_text("Status: OFF");
+          camera_status->add_style(id(style_status_off));
+          camera_status->remove_style(id(style_status_on));
+        }
+
+        // Update WiFi Status
+        if (id(wifi_component).is_connected()) {
+          id(wifi_status_label)->set_text("WiFi: Connected");
+        } else {
+          id(wifi_status_label)->set_text("WiFi: Disconnected");
+        }
+
+        // Update Time
+        auto time = id(homeassistant_time).now();
+        char time_buf[32];
+        snprintf(time_buf, sizeof(time_buf), "%02d:%02d", time.hour, time.minute);
+        id(time_label)->set_text(time_buf);
 
 # -------------------
 # RGB LED on the back
