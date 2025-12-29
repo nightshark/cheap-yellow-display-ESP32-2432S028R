@@ -70,7 +70,6 @@ font:
   - file: "gfonts://Roboto"
     id: roboto_24
     size: 24
-    weight: bold
     bpp: 4
   - file: "gfonts://Roboto"
     id: roboto_12
@@ -341,10 +340,11 @@ lvgl:
                     - label:
                         id: time_label
                         text: "--:--"
-                        align: right
+                        text_align: RIGHT
 
 # Update LVGL labels based on Home Assistant states
   on_idle:
+    timeout: 5s
     - lambda: |-
         // Update Fan Status
         auto fan_status = id(fan_status_label);
