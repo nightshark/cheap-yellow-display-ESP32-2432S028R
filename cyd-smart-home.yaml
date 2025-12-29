@@ -346,7 +346,7 @@ lvgl:
   on_idle:
     timeout: 5s
     then:
-      - lambda: |-
+      - lambda: |
           // Update Fan Status
           auto fan_status = id(fan_status_label);
           if (id(fan_state).state) {
