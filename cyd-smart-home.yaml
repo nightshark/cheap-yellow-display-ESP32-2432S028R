@@ -284,41 +284,12 @@ lvgl:
                         text: "[TAP TO CONTROL]"
                         styles: style_button_text
 
-              # ===== CAMERA CARD (Row 2, Column 0) =====
-              - obj:
-                  id: camera_card
-                  grid_cell_row_pos: 2
-                  grid_cell_column_pos: 0
-                  styles: style_card
-                  clickable: true
-                  on_click:
-                    - homeassistant.service:
-                        service: camera.turn_on
-                        data:
-                          entity_id: !secret camera_entity
-                  layout:
-                    type: flex
-                    flex_flow: column
-                    flex_align_main: start
-                    flex_align_cross: start
-                  widgets:
-                    - label:
-                        id: camera_title
-                        text: "Camera"
-                        styles: style_card_title
-                    - label:
-                        id: camera_status_label
-                        text: "Status: OFF"
-                        styles: style_status_off
-                    - label:
-                        text: "[TAP TO VIEW]"
-                        styles: style_button_text
-
-              # ===== QUICK ACTIONS CARD (Row 2, Column 1) =====
+              # ===== QUICK ACTIONS CARD (Row 2, spans both columns) =====
               - obj:
                   id: quick_actions_card
                   grid_cell_row_pos: 2
-                  grid_cell_column_pos: 1
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 2
                   styles: style_card
                   layout:
                     type: flex
@@ -412,18 +383,6 @@ lvgl:
         std::string mode_text = "Mode: " + id(hvac_mode_text).state;
         id(hvac_mode_label)->set_text(mode_text.c_str());
 
-        // Update Camera Status
-        auto camera_status = id(camera_status_label);
-        if (id(camera_enabled).state) {
-          camera_status->set_text("Status: ACTIVE");
-          camera_status->add_style(id(style_status_on));
-          camera_status->remove_style(id(style_status_off));
-        } else {
-          camera_status->set_text("Status: OFF");
-          camera_status->add_style(id(style_status_off));
-          camera_status->remove_style(id(style_status_on));
-        }
-
         // Update WiFi Status
         if (id(wifi_component).is_connected()) {
           id(wifi_status_label)->set_text("WiFi: Connected");
@@ -495,13 +454,6 @@ binary_sensor:
     id: hvac_state
     entity_id: !secret hvac_entity
     internal: true
-
-  - platform: homeassistant
-    name: "Camera Enabled"
-    id: camera_enabled
-    entity_id: !secret camera_entity
-    internal: true
-
 
 sensor:
   - platform: homeassistant
@@ -635,25 +587,6 @@ select:
           data:
             entity_id: !secret hvac_entity
             hvac_mode: !lambda "return x;"
-
-# -------------------
-# Switch for camera recording
-# -------------------
-switch:
-  - platform: template
-    name: "Camera Recording"
-    id: camera_recording
-    optimistic: true
-    turn_on_action:
-      - homeassistant.service:
-          service: camera.enable_motion_detection
-          data:
-            entity_id: !secret camera_entity
-    turn_off_action:
-      - homeassistant.service:
-          service: camera.disable_motion_detection
-          data:
-            entity_id: !secret camera_entity
 
 wifi:
   id: wifi_component
