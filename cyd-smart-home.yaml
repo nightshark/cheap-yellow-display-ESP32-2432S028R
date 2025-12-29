@@ -209,7 +209,7 @@ lvgl:
                   widgets:
                     - label:
                         text: "SMART HOME CONTROL"
-                        align: CENTER
+                        text_align: CENTER
 
               # ===== FAN CARD (Row 1, Column 0) =====
               - obj:
